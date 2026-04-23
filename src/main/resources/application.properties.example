@@ -1,0 +1,69 @@
+# Application Name
+spring.application.name=BrainBlitz
+
+# ================================
+# Database (PostgreSQL)
+# ================================
+spring.datasource.url=jdbc:postgresql://localhost:5432/YOUR_DB_NAME
+spring.datasource.username=YOUR_DB_USERNAME
+spring.datasource.password=YOUR_DB_PASSWORD
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+
+# ================================
+# Email (Gmail)
+# ================================
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=YOUR_GMAIL_ADDRESS
+spring.mail.password=YOUR_GMAIL_APP_PASSWORD
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+
+# ================================
+# Server
+# ================================
+server.port=8081
+
+# ================================
+# Google OAuth2
+# ================================
+spring.security.oauth2.client.registration.google.client-id=YOUR_GOOGLE_CLIENT_ID
+spring.security.oauth2.client.registration.google.client-secret=YOUR_GOOGLE_CLIENT_SECRET
+spring.security.oauth2.client.registration.google.scope=email,profile
+spring.security.oauth2.client.registration.google.redirect-uri=YOUR_REDIRECT_URI
+
+# ================================
+# JWT
+# ================================
+jwt.secret=YOUR_JWT_SECRET_KEY
+jwt.expiration=86400000
+
+# ================================
+# Frontend URL
+# ================================
+app.frontend.url=http://localhost:3000
+
+# ================================
+# Cloudinary
+# ================================
+cloudinary.cloud-name=YOUR_CLOUDINARY_CLOUD_NAME
+cloudinary.api-key=YOUR_CLOUDINARY_API_KEY
+cloudinary.api-secret=YOUR_CLOUDINARY_API_SECRET
+
+# ================================
+# Cloudinary Folders
+# ================================
+cloudinary.folder.images=YOUR_IMAGES_FOLDER
+cloudinary.folder.audio=YOUR_AUDIO_FOLDER
+
+# ================================
+# Ollama (AI)
+# ================================
+ollama.url=http://localhost:11434
+
+# ================================
+# Actuator
+# ================================
+management.endpoints.web.exposure.include=*
