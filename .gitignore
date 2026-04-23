@@ -1,0 +1,10 @@
+# Secret configuration
+src/main/resources/application.properties
+
+# Maven build folder
+target/
+
+# IDE files
+.idea/
+*.iml
+.vscode/
