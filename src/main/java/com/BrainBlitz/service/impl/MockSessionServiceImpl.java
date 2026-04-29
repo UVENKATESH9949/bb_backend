@@ -16,6 +16,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
+// ✅ REMOVED: javax.swing.text.html.Option — was causing wrong Option type
 
 @Service
 public class MockSessionServiceImpl implements MockSessionService {
@@ -54,35 +55,50 @@ public class MockSessionServiceImpl implements MockSessionService {
     @Override
     public MockSessionResponse startMock(Long userId, MockSessionRequest request) {
 
-        // ── DEMO MODE START ── comment this block and uncomment real code when done ──
+        // ── DEMO MODE ─────────────────────────────────────────────
+        // Fetches real questions from DB regardless of exam type.
+        // Remove this block and uncomment REAL CODE below when ready.
+        // ─────────────────────────────────────────────────────────
+
+        User anyUser = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+
+        // Fetch up to 5 real questions
+        List<Question> demoQuestions = questionRepository
+            .findAll(PageRequest.of(0, 5))
+            .getContent();
+
+        if (demoQuestions.isEmpty()) {
+            throw new RuntimeException(
+                "No questions in DB yet. Add some first.");
+        }
+
+        // ✅ Print options using McqOption — NOT javax.swing.text.html.Option
+        for (Question q : demoQuestions) {
+            if (q.getOptions() != null) {
+                for (McqOption o : q.getOptions()) {
+                    System.out.println(o.toString());
+                }
+            }
+        }
+
         MockSession demoSession = new MockSession();
-//        demoSession.setId(999L);
+        demoSession.setUser(anyUser);
         demoSession.setExamType(request.getExamType());
         demoSession.setMockSource(request.getMockSource());
         demoSession.setStatus(MockStatus.IN_PROGRESS);
         demoSession.setStartTime(LocalDateTime.now());
-        demoSession.setTotalQuestions(5);
-        demoSession.setMaxPossibleScore(500.0);
+        demoSession.setTotalQuestions(demoQuestions.size());   // ✅ matches actual list size
+        demoSession.setMaxPossibleScore(demoQuestions.size() * 100.0);
+        demoSession.setUserLevelAtTime(anyUser.getLevel());    // ✅ was missing — NOT NULL in DB
 
-        // Fetch any 5 real questions from DB regardless of exam type
-        List<Question> demoQuestions = questionRepository.findAll(
-            PageRequest.of(0, 25)
-        ).getContent();
-
-        if (demoQuestions.isEmpty()) {
-            throw new RuntimeException("No questions in DB yet. Add some first.");
-        }
-
-        User anyUser = userRepository.findById(userId)
-        	    .orElseThrow(() -> new RuntimeException("User not found"));
-        	demoSession.setUser(anyUser);
-        	
         mockSessionRepository.save(demoSession);
         return mapToSessionResponse(demoSession, demoQuestions);
-        // ── DEMO MODE END ──
+
+        // ── DEMO MODE END ─────────────────────────────────────────
 
 
-        // ── REAL CODE (commented out for now) ──
+        // ── REAL CODE (uncomment when demo mode is removed) ───────
         /*
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new ResourceNotFoundException(
@@ -138,17 +154,14 @@ public class MockSessionServiceImpl implements MockSessionService {
 
         MockSession session = validateSessionOwnership(sessionId, userId);
 
-        // Only allow submitting IN_PROGRESS mocks
         if (session.getStatus() != MockStatus.IN_PROGRESS) {
             throw new RuntimeException(
                 "This mock is already " + session.getStatus());
         }
 
-        // Fetch all answers for this session
         List<MockAnswer> answers = mockAnswerRepository
             .findByMockSessionId(sessionId);
 
-        // Calculate scores
         int correct = 0, wrong = 0, skipped = 0;
         double totalScore = 0;
 
@@ -176,7 +189,6 @@ public class MockSessionServiceImpl implements MockSessionService {
             ? (double) correct / attempted * 100
             : 0;
 
-        // Update session
         session.setStatus(MockStatus.COMPLETED);
         session.setEndTime(LocalDateTime.now());
         session.setDurationSeconds((int) ChronoUnit.SECONDS.between(
@@ -185,21 +197,17 @@ public class MockSessionServiceImpl implements MockSessionService {
         session.setWrong(wrong);
         session.setSkipped(skipped);
         session.setAttempted(attempted);
-        session.setTotalScore(Math.max(totalScore, 0)); // never negative total
+        session.setTotalScore(Math.max(totalScore, 0));
         session.setAccuracyPercentage(accuracy);
         mockSessionRepository.save(session);
 
-        // Update user total mocks count
         User user = session.getUser();
         user.setTotalMocksAttempted(user.getTotalMocksAttempted() + 1);
         userRepository.save(user);
 
-        // Process performance — update weak areas + level
-        // Only process if not already processed
         if (!session.isPerformanceProcessed()) {
             userWeakAreaService.updateWeakAreas(userId, sessionId);
             userLevelService.updateLevelAfterMock(userId, sessionId, accuracy);
-
             session.setPerformanceProcessed(true);
             mockSessionRepository.save(session);
         }
@@ -214,9 +222,7 @@ public class MockSessionServiceImpl implements MockSessionService {
     @Override
     public void abandonMock(Long sessionId, Long userId) {
         MockSession session = validateSessionOwnership(sessionId, userId);
-
         if (session.getStatus() != MockStatus.IN_PROGRESS) return;
-
         session.setStatus(MockStatus.ABANDONED);
         session.setEndTime(LocalDateTime.now());
         mockSessionRepository.save(session);
@@ -229,15 +235,12 @@ public class MockSessionServiceImpl implements MockSessionService {
     @Override
     public void timeoutMock(Long sessionId, Long userId) {
         MockSession session = validateSessionOwnership(sessionId, userId);
-
         if (session.getStatus() != MockStatus.IN_PROGRESS) return;
 
         session.setStatus(MockStatus.TIMED_OUT);
         session.setEndTime(LocalDateTime.now());
         mockSessionRepository.save(session);
 
-        // Still process performance even on timeout
-        // User attempted questions — they should count
         List<MockAnswer> answers = mockAnswerRepository
             .findByMockSessionId(sessionId);
 
@@ -253,7 +256,6 @@ public class MockSessionServiceImpl implements MockSessionService {
 
             userWeakAreaService.updateWeakAreas(userId, sessionId);
             userLevelService.updateLevelAfterMock(userId, sessionId, accuracy);
-
             session.setPerformanceProcessed(true);
             mockSessionRepository.save(session);
         }
@@ -304,7 +306,6 @@ public class MockSessionServiceImpl implements MockSessionService {
             Long userId, int userLevel, ExamType examType,
             MockSource mockSource, String roundName) {
 
-        // Fetch exam pattern
         List<ExamPattern> patterns = roundName != null
             ? examPatternRepository
                 .findByExamTypeAndRoundNameAndIsActiveTrue(examType, roundName)
@@ -316,15 +317,12 @@ public class MockSessionServiceImpl implements MockSessionService {
                 "No exam pattern found for: " + examType);
         }
 
-        // Fetch user weak areas
         List<String> weakTopics = userWeakAreaRepository
             .findByUserIdAndIsWeakTrue(userId)
             .stream()
             .map(UserWeakArea::getTopic)
             .collect(Collectors.toList());
 
-        // Fetch already seen question IDs within cooldown
-        // Correct → 30 days, Wrong → 7 days, Skipped → 3 days
         Set<Long> seenCorrect = userSeenQuestionRepository
             .findByUserIdAndResultAndSeenAtAfter(
                 userId, AnswerResult.CORRECT,
@@ -349,7 +347,6 @@ public class MockSessionServiceImpl implements MockSessionService {
             .map(s -> s.getQuestion().getId())
             .collect(Collectors.toSet());
 
-        // Combine all seen questions to exclude
         Set<Long> excludeIds = new HashSet<>();
         excludeIds.addAll(seenCorrect);
         excludeIds.addAll(seenWrong);
@@ -357,23 +354,14 @@ public class MockSessionServiceImpl implements MockSessionService {
 
         List<Question> selectedQuestions = new ArrayList<>();
 
-        // Select questions per pattern topic
         for (ExamPattern pattern : patterns) {
-
-            // Is this a weak topic for user?
             boolean isWeakTopic = weakTopics.contains(pattern.getTopic());
-
-            // Adjust difficulty based on user level and weak area
-            // Weak topic → give easier questions first
-            // Strong topic → give harder questions
             int adjustedLevel = isWeakTopic
                 ? Math.max(userLevel - 1, 1)
                 : userLevel;
 
-            // Fetch questions for this topic at adjusted level
-         // NEW — uses existing repository method
-            List<DifficultyLevel> allowedLevels = getAllowedDifficultyLevels(
-                adjustedLevel);
+            List<DifficultyLevel> allowedLevels =
+                getAllowedDifficultyLevels(adjustedLevel);
 
             List<Question> topicQuestions = questionRepository
                 .findQuestionsForMock(
@@ -389,7 +377,6 @@ public class MockSessionServiceImpl implements MockSessionService {
             selectedQuestions.addAll(topicQuestions);
         }
 
-        // Shuffle to avoid predictable order
         Collections.shuffle(selectedQuestions);
         return selectedQuestions;
     }
@@ -399,41 +386,24 @@ public class MockSessionServiceImpl implements MockSessionService {
     // ─────────────────────────────────────────────
 
     private List<DifficultyLevel> getAllowedDifficultyLevels(int userLevel) {
-
-        // Beginner (level 1-3) → only easy questions
         if (userLevel <= 3) {
             return List.of(
                 DifficultyLevel.LEVEL_1,
                 DifficultyLevel.LEVEL_2,
-                DifficultyLevel.LEVEL_3
-            );
+                DifficultyLevel.LEVEL_3);
         }
-
-        // Intermediate (level 4-6) → easy + medium questions
         if (userLevel <= 6) {
             return List.of(
-                DifficultyLevel.LEVEL_1,
-                DifficultyLevel.LEVEL_2,
-                DifficultyLevel.LEVEL_3,
-                DifficultyLevel.LEVEL_4,
-                DifficultyLevel.LEVEL_5,
-                DifficultyLevel.LEVEL_6
-            );
+                DifficultyLevel.LEVEL_1, DifficultyLevel.LEVEL_2,
+                DifficultyLevel.LEVEL_3, DifficultyLevel.LEVEL_4,
+                DifficultyLevel.LEVEL_5, DifficultyLevel.LEVEL_6);
         }
-
-        // Advanced (level 7-10) → all levels
         return List.of(
-            DifficultyLevel.LEVEL_1,
-            DifficultyLevel.LEVEL_2,
-            DifficultyLevel.LEVEL_3,
-            DifficultyLevel.LEVEL_4,
-            DifficultyLevel.LEVEL_5,
-            DifficultyLevel.LEVEL_6,
-            DifficultyLevel.LEVEL_7,
-            DifficultyLevel.LEVEL_8,
-            DifficultyLevel.LEVEL_9,
-            DifficultyLevel.LEVEL_10
-        );
+            DifficultyLevel.LEVEL_1,  DifficultyLevel.LEVEL_2,
+            DifficultyLevel.LEVEL_3,  DifficultyLevel.LEVEL_4,
+            DifficultyLevel.LEVEL_5,  DifficultyLevel.LEVEL_6,
+            DifficultyLevel.LEVEL_7,  DifficultyLevel.LEVEL_8,
+            DifficultyLevel.LEVEL_9,  DifficultyLevel.LEVEL_10);
     }
 
     // ─────────────────────────────────────────────
@@ -447,8 +417,6 @@ public class MockSessionServiceImpl implements MockSessionService {
         User user = session.getUser();
 
         for (Question question : questions) {
-
-            // Check if already exists — update seenAt
             Optional<UserSeenQuestion> existing =
                 userSeenQuestionRepository
                     .findByUserIdAndQuestionId(userId, question.getId());
@@ -464,7 +432,7 @@ public class MockSessionServiceImpl implements MockSessionService {
                 seen.setQuestion(question);
                 seen.setMockSession(session);
                 seen.setSeenAt(LocalDateTime.now());
-                seen.setResult(AnswerResult.SKIPPED); // default until answered
+                seen.setResult(AnswerResult.SKIPPED);
                 userSeenQuestionRepository.save(seen);
             }
         }
@@ -477,9 +445,7 @@ public class MockSessionServiceImpl implements MockSessionService {
     private double calculateMaxScore(ExamType examType, int totalQuestions) {
         List<ExamPattern> patterns = examPatternRepository
             .findByExamTypeAndIsActiveTrue(examType);
-
-        if (patterns.isEmpty()) return totalQuestions; // default 1 mark each
-
+        if (patterns.isEmpty()) return totalQuestions;
         return patterns.stream()
             .mapToDouble(p -> p.getQuestionsCount() * p.getMarksPerQuestion())
             .sum();
@@ -489,9 +455,7 @@ public class MockSessionServiceImpl implements MockSessionService {
     // HELPER — Validate Session Ownership
     // ─────────────────────────────────────────────
 
-    private MockSession validateSessionOwnership(
-            Long sessionId, Long userId) {
-
+    private MockSession validateSessionOwnership(Long sessionId, Long userId) {
         MockSession session = mockSessionRepository.findById(sessionId)
             .orElseThrow(() -> new ResourceNotFoundException(
                 "Mock session not found with id: " + sessionId));
@@ -500,7 +464,6 @@ public class MockSessionServiceImpl implements MockSessionService {
             throw new RuntimeException(
                 "Access denied: This mock does not belong to you");
         }
-
         return session;
     }
 
@@ -525,18 +488,16 @@ public class MockSessionServiceImpl implements MockSessionService {
         result.setDurationSeconds(session.getDurationSeconds());
         result.setStatus(session.getStatus());
         result.setAiStudyPlan(session.getAiStudyPlan());
-     // Add after result.setAiStudyPlan(session.getAiStudyPlan());
-
         result.setLevelBefore(session.getUserLevelAtTime());
         result.setLevelAfter(session.getUser().getLevel());
-        result.setLevelChanged(session.getUserLevelAtTime() != session.getUser().getLevel());
+        result.setLevelChanged(
+            session.getUserLevelAtTime() != session.getUser().getLevel());
+
         result.setAnswers(answers.stream()
             .map(this::mapAnswerToResponse)
             .collect(Collectors.toList()));
 
-        // Topic wise breakdown
         Map<String, TopicResultResponse> topicBreakdown = new LinkedHashMap<>();
-
         for (MockAnswer answer : answers) {
             String key = answer.getSubject() + " → " + answer.getTopic();
             topicBreakdown.computeIfAbsent(key, k -> {
@@ -547,8 +508,7 @@ public class MockSessionServiceImpl implements MockSessionService {
             });
 
             TopicResultResponse topicResult = topicBreakdown.get(key);
-            topicResult.setTotalQuestions(
-                topicResult.getTotalQuestions() + 1);
+            topicResult.setTotalQuestions(topicResult.getTotalQuestions() + 1);
 
             if (answer.getResult() == AnswerResult.CORRECT) {
                 topicResult.setCorrect(topicResult.getCorrect() + 1);
@@ -571,8 +531,6 @@ public class MockSessionServiceImpl implements MockSessionService {
             MockSession session, List<Question> questions) {
 
         MockSessionResponse response = new MockSessionResponse();
-
-        // ✅ id not sessionId
         response.setId(session.getId());
         response.setUserId(session.getUser().getId());
         response.setExamType(session.getExamType());
@@ -583,51 +541,286 @@ public class MockSessionServiceImpl implements MockSessionService {
         response.setStartTime(session.getStartTime());
         response.setCreatedAt(session.getCreatedAt());
         response.setTitle(session.getExamType().name() + " Mock Test");
-        response.setInstructions("Answer all questions. Timer runs for the full test.");
-        response.setTimeLimitMinutes(30); // or get from exam pattern
-        
-        // ✅ Map questions to summary response
+        response.setInstructions(
+            "Answer all questions. Timer runs for the full test.");
+        response.setTimeLimitMinutes(30);
+
         response.setQuestions(questions.stream()
-            .map(q -> {
-                QuestionSummaryResponse summary = new QuestionSummaryResponse();
-                summary.setId(q.getId());
-                summary.setQuestionType(q.getQuestionType());
-                summary.setQuestionText(q.getQuestionText());
-                summary.setSubject(q.getSubject());
-                summary.setTopic(q.getTopic());
-                summary.setDifficultyLevel(q.getDifficultyLevel());
-                summary.setMarks(q.getMarks());
-                summary.setNegativeMarks(q.getNegativeMarks());
-                summary.setTimeLimitSeconds(q.getTimeLimitSeconds());
-                summary.setCorrectOptions(
-                	    q.getOptions().stream()
-                	        .sorted(Comparator.comparingInt(McqOption::getOptionOrder))
-                	        .map(McqOption::isCorrect)
-                	        .collect(Collectors.toList())
-                	);
-                summary.setOptions(
-                	    q.getOptions().stream()
-                	        .map(opt -> opt.getOptionText())
-                	        .collect(Collectors.toList())
-                	);
-                
-//                	summary.setCorrectOptions(q.getCorrectOptions()); // whatever your correct answer field is
-                	summary.setExplanation(q.getQuestionExplanation());
-                	summary.setHint(q.getHint());
-                	
-                	if (q.getArrangementQuestion() != null) {
-                	    com.BrainBlitz.entity.ArrangementQuestion aq = q.getArrangementQuestion();
-                	    summary.setSegmentsJson(aq.getSegmentsJson());
-                	    summary.setCorrectOrder(aq.getCorrectOrder());
-                	}
-                	
-                return summary;
-            })
+            .map(this::mapToQuestionSummary)
             .collect(Collectors.toList()));
 
         return response;
     }
-    
+
+    // ─────────────────────────────────────────────────────────────────
+    // Maps a Question entity → QuestionSummaryResponse
+    // Branches on QuestionType to populate the correct payload
+    // ─────────────────────────────────────────────────────────────────
+
+    private QuestionSummaryResponse mapToQuestionSummary(Question q) {
+
+        QuestionSummaryResponse summary = new QuestionSummaryResponse();
+
+        // ── Common fields ──────────────────────────────────────
+        summary.setId(q.getId());
+        summary.setQuestionType(q.getQuestionType());
+        summary.setQuestionText(q.getQuestionText());
+        summary.setQuestionTextHindi(q.getQuestionTextHindi());
+        summary.setQuestionImageUrl(q.getQuestionImageUrl());
+        summary.setExamCategory(q.getExamCategory());
+        summary.setExamType(q.getExamType());
+        summary.setSubject(q.getSubject());
+        summary.setTopic(q.getTopic());
+        summary.setDifficultyLevel(q.getDifficultyLevel());
+        summary.setLanguage(q.getLanguage());
+        summary.setMarks(q.getMarks());
+        summary.setNegativeMarks(q.getNegativeMarks());
+        summary.setIsActive(q.isActive());
+        summary.setIsAiGenerated(q.isAiGenerated());
+        summary.setGroupId(q.getGroupId());
+        summary.setQuestionOrderInGroup(q.getQuestionOrderInGroup());
+        summary.setTimeLimitSeconds(q.getTimeLimitSeconds());
+        summary.setHint(q.getHint());
+        summary.setHintHindi(q.getHintHindi());
+        summary.setExplanation(q.getQuestionExplanation());
+        summary.setCreatedAt(q.getCreatedAt());
+        summary.setUpdatedAt(q.getUpdatedAt());
+
+        // ── Type-specific payload ──────────────────────────────
+        switch (q.getQuestionType()) {
+
+            case MCQ_SINGLE:
+            case TRUE_FALSE:
+            case SYNONYM:
+            case ERROR_SPOTTING:
+                summary.setMcqPayload(buildMcqPayload(q));
+                break;
+
+            case MULTI_CORRECT:
+                summary.setMultiCorrectPayload(buildMultiCorrectPayload(q));
+                break;
+
+            case FILL_BLANK:
+            case TEXT_ANSWER:
+                summary.setFillBlankPayload(buildFillBlankPayload(q));
+                break;
+
+            case SENTENCE_ARRANGEMENT:
+            case PARA_JUMBLE:
+                summary.setArrangementPayload(buildArrangementPayload(q));
+                break;
+
+            case MIRROR_IMAGE:
+            case WATER_IMAGE:
+            case PATTERN_MATRIX:
+            case ODD_ONE_OUT:
+            case FIGURE_SERIES:
+                summary.setImagePayload(buildImagePayload(q));
+                break;
+
+            // IMAGE_MCQ / IMAGE_OPTIONS need both image data AND text options
+            case IMAGE_MCQ:
+            case IMAGE_OPTIONS:
+                summary.setImagePayload(buildImagePayload(q));
+                summary.setMcqPayload(buildMcqPayload(q));
+                break;
+
+            case CODE_WRITE:
+            case CODE_DEBUG:
+                summary.setCodingPayload(buildCodingPayload(q));
+                break;
+
+            // Code snippet types — also include MCQ options if present
+            case CODE_OUTPUT:
+            case CODE_FILL:
+            case SQL_OUTPUT:
+            case FLOWCHART_MCQ:
+                summary.setCodeSnippetPayload(buildCodeSnippetPayload(q));
+                if (q.getOptions() != null && !q.getOptions().isEmpty()) {
+                    summary.setMcqPayload(buildMcqPayload(q));
+                }
+                break;
+
+            case EMAIL_WRITE:
+            case ESSAY_WRITE:
+            case SPEECH_ROUND:
+            case LISTENING_COMP:
+                summary.setWritingPayload(buildWritingPayload(q));
+                break;
+
+            default:
+                // Unknown type — common fields still returned, no payload
+                break;
+        }
+
+        return summary;
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // PAYLOAD BUILDER HELPERS
+    // ─────────────────────────────────────────────────────────────────
+
+    /** Sorted by optionOrder so A/B/C/D are always in correct order */
+    private QuestionSummaryResponse.McqPayload buildMcqPayload(Question q) {
+        List<QuestionSummaryResponse.McqOptionDto> optionDtos =
+            q.getOptions() == null ? Collections.emptyList() :
+            q.getOptions().stream()
+                .sorted(Comparator.comparingInt(McqOption::getOptionOrder))
+                .map(opt -> new QuestionSummaryResponse.McqOptionDto(
+                    opt.getId(),
+                    opt.getOptionOrder(),
+                    opt.getOptionText(),
+                    opt.getOptionTextHindi(),
+                    opt.getOptionImageUrl(),
+                    opt.isCorrect(),
+                    opt.getOptionExplanation()
+                ))
+                .collect(Collectors.toList());
+
+        return new QuestionSummaryResponse.McqPayload(optionDtos);
+    }
+
+    /** Same data as MCQ — separate payload so frontend renders checkboxes */
+    private QuestionSummaryResponse.MultiCorrectPayload buildMultiCorrectPayload(
+            Question q) {
+        List<QuestionSummaryResponse.McqOptionDto> optionDtos =
+            q.getOptions() == null ? Collections.emptyList() :
+            q.getOptions().stream()
+                .sorted(Comparator.comparingInt(McqOption::getOptionOrder))
+                .map(opt -> new QuestionSummaryResponse.McqOptionDto(
+                    opt.getId(),
+                    opt.getOptionOrder(),
+                    opt.getOptionText(),
+                    opt.getOptionTextHindi(),
+                    opt.getOptionImageUrl(),
+                    opt.isCorrect(),
+                    opt.getOptionExplanation()
+                ))
+                .collect(Collectors.toList());
+
+        return new QuestionSummaryResponse.MultiCorrectPayload(optionDtos);
+    }
+
+    /** Sorted by blankPosition — blank 1, blank 2, blank 3... */
+    private QuestionSummaryResponse.FillBlankPayload buildFillBlankPayload(
+            Question q) {
+        List<QuestionSummaryResponse.BlankDto> blanks =
+            q.getFillBlankAnswers() == null ? Collections.emptyList() :
+            q.getFillBlankAnswers().stream()
+                .sorted(Comparator.comparingInt(FillBlankAnswer::getBlankPosition))
+                .map(fba -> new QuestionSummaryResponse.BlankDto(
+                    fba.getBlankPosition(),
+                    fba.getCorrectAnswer(),
+                    fba.getAlternateAnswers(),
+                    fba.isCaseSensitive(),
+                    fba.isExactMatch(),
+                    fba.getBlankHint(),
+                    fba.getExpectedAnswerLength()
+                ))
+                .collect(Collectors.toList());
+
+        return new QuestionSummaryResponse.FillBlankPayload(blanks);
+    }
+
+    private QuestionSummaryResponse.ArrangementPayload buildArrangementPayload(
+            Question q) {
+        ArrangementQuestion aq = q.getArrangementQuestion();
+        if (aq == null) return null;
+
+        return new QuestionSummaryResponse.ArrangementPayload(
+            aq.getArrangementType(),
+            aq.getSegmentsJson(),
+            aq.getSegmentsJsonHindi(),
+            aq.getCorrectOrder(),
+            aq.getAlternateCorrectOrders(),
+            aq.getFixedOpeningSentence(),
+            aq.getFixedClosingSentence(),
+            aq.getFixedOpeningSentenceHindi(),
+            aq.getFixedClosingSentenceHindi(),
+            aq.isDragDrop()
+        );
+    }
+
+    private QuestionSummaryResponse.ImagePayload buildImagePayload(Question q) {
+        ImageQuestion iq = q.getImageQuestion();
+        if (iq == null) return null;
+
+        return new QuestionSummaryResponse.ImagePayload(
+            iq.getImageQuestionType(),
+            iq.getMainImageUrl(),
+            iq.getSupportingImagesJson(),
+            iq.getMissingCellPosition(),
+            iq.getImageDimensions(),
+            iq.getMainImageAltText(),
+            iq.getSupportingImagesAltTextJson(),
+            iq.getCorrectOptionIndex(),
+            iq.getOptionImagesJson(),
+            iq.getOptionImagesAltTextJson()
+        );
+    }
+
+    /**
+     * Excludes testCases and solutionSteps —
+     * those are fetched separately after submission, not needed mid-test
+     */
+    private QuestionSummaryResponse.CodingPayload buildCodingPayload(Question q) {
+        CodingQuestion cq = q.getCodingQuestion();
+        if (cq == null) return null;
+
+        return new QuestionSummaryResponse.CodingPayload(
+            cq.getProblemStatement(),
+            cq.getProblemStatementHindi(),
+            cq.getInputFormat(),
+            cq.getOutputFormat(),
+            cq.getConstraints(),
+            cq.getStarterCodeJson(),
+            cq.getSupportedLanguagesJson(),
+            cq.getExpectedTimeComplexity(),
+            cq.getExpectedSpaceComplexity(),
+            cq.getWhyThisDataStructure(),
+            cq.getWhyThisApproach(),
+            cq.getAlternateApproachesJson(),
+            cq.getBuggyCodeJson(),
+            cq.getBugDescription()
+        );
+    }
+
+    private QuestionSummaryResponse.CodeSnippetPayload buildCodeSnippetPayload(
+            Question q) {
+        CodeSnippetQuestion csq = q.getCodeSnippetQuestion();
+        if (csq == null) return null;
+
+        return new QuestionSummaryResponse.CodeSnippetPayload(
+            csq.getCodeSnippet(),
+            csq.getProgrammingLanguage(),
+            csq.getSqlTableDataJson(),
+            csq.getSqlQuery(),
+            csq.getBlankLineNumber(),
+            csq.getAcceptedAnswersJson(),
+            csq.getFlowchartImageUrl()
+        );
+    }
+
+    private QuestionSummaryResponse.WritingPayload buildWritingPayload(Question q) {
+        WritingQuestion wq = q.getWritingQuestion();
+        if (wq == null) return null;
+
+        return new QuestionSummaryResponse.WritingPayload(
+            wq.getWritingType(),
+            wq.getPrompt(),
+            wq.getMinWords(),
+            wq.getMaxWords(),
+            wq.getEvaluationCriteriaJson(),
+            wq.getSampleAnswer(),
+            wq.getAudioUrl(),
+            wq.getSpeechDurationSeconds()
+        );
+    }
+
+    // ─────────────────────────────────────────────
+    // HELPER — Map Answer To Response
+    // ─────────────────────────────────────────────
+
     private MockAnswerResponse mapAnswerToResponse(MockAnswer answer) {
         MockAnswerResponse response = new MockAnswerResponse();
         response.setId(answer.getId());

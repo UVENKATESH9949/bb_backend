@@ -86,14 +86,12 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         // ── Allowed origins ───────────────────────────────────
-        config.setAllowedOrigins(List.of(
-            "http://localhost:3000",    // Next.js dev server — THIS WAS MISSING
-            "http://localhost:3001",    // fallback if 3000 is busy
-            "http://127.0.0.1:3000" ,   // some browsers use 127.0.0.1
-            "https://curly-orbit-r4rrjgqr74vp2wwp-3000.app.github.dev"
-            // Add your production domain here later:
-            // "https://brainblitz.in"
-        ));
+        config.setAllowedOriginPatterns(List.of(
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3000",
+    "https://*.app.github.dev"  // wildcard covers any Codespace URL
+));
 
         // ── Allowed HTTP methods ──────────────────────────────
         config.setAllowedMethods(List.of(
