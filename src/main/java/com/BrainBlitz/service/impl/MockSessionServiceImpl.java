@@ -589,10 +589,10 @@ public class MockSessionServiceImpl implements MockSessionService {
         // ── Type-specific payload ──────────────────────────────
         switch (q.getQuestionType()) {
 
-            case MCQ_SINGLE:
-            case TRUE_FALSE:
-            case SYNONYM:
-            case ERROR_SPOTTING:
+        case MCQ:
+        case TRUE_FALSE:
+        case SYNONYM_ANTONYM:
+        case ERROR_SPOTTING:
                 summary.setMcqPayload(buildMcqPayload(q));
                 break;
 
