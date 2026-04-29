@@ -1,14 +1,3 @@
-// src/main/java/com/BrainBlitz/dto/response/QuestionSummaryResponse.java
-
-package com.BrainBlitz.dto.response;
-
-import com.BrainBlitz.entity.QuestionExplanation;
-import com.BrainBlitz.enums.*;
-import lombok.*;
-import java.time.LocalDateTime;
-import java.util.List;
-
-
 public class QuestionSummaryResponse {
 
     // ── Common fields ──────────────────────────────────────────
