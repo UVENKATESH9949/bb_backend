@@ -535,6 +535,9 @@ public class QuestionResponse {
         private String mainImageUrl;
         private List<String> supportingImageUrls;
         private List<McqOptionResponse> options;
+        private String optionImagesJson;
+        private Integer correctOptionIndex;
+        
 		public ImageQuestionResponse(Long id, ImageQuestionType imageQuestionType, String mainImageUrl,
 				List<String> supportingImageUrls, List<McqOptionResponse> options) {
 			super();
@@ -577,7 +580,18 @@ public class QuestionResponse {
 		public void setOptions(List<McqOptionResponse> options) {
 			this.options = options;
 		}
-        
+		public String getOptionImagesJson() {
+	        return optionImagesJson;
+	    }
+	    public void setOptionImagesJson(String optionImagesJson) {
+	        this.optionImagesJson = optionImagesJson;
+	    }
+	    public Integer getCorrectOptionIndex() {
+	        return correctOptionIndex;
+	    }
+	    public void setCorrectOptionIndex(Integer correctOptionIndex) {
+	        this.correctOptionIndex = correctOptionIndex;
+	    }
         
     }
 

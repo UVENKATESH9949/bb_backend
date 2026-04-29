@@ -32,6 +32,9 @@ public class QuestionSummaryResponse {
     private List<Boolean> correctOptions; // correct option indexes
     private QuestionExplanation explanation;
     private String hint;
+    private String segmentsJson;
+    private String correctOrder;
+    // + getters/setters
     
 	public QuestionSummaryResponse(Long id, String questionText, QuestionType questionType, ExamCategory examCategory,
 			ExamType examType, String subject, String topic, DifficultyLevel difficultyLevel, Language language,
@@ -55,6 +58,28 @@ public class QuestionSummaryResponse {
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
 	}
+	
+	
+	public String getSegmentsJson() {
+		return segmentsJson;
+	}
+
+
+	public void setSegmentsJson(String segmentsJson) {
+		this.segmentsJson = segmentsJson;
+	}
+
+
+	public String getCorrectOrder() {
+		return correctOrder;
+	}
+
+
+	public void setCorrectOrder(String correctOrder) {
+		this.correctOrder = correctOrder;
+	}
+
+
 	public QuestionSummaryResponse() {
 		super();
 	}

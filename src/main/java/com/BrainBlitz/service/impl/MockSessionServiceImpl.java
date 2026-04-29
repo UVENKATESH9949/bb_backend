@@ -66,7 +66,7 @@ public class MockSessionServiceImpl implements MockSessionService {
 
         // Fetch any 5 real questions from DB regardless of exam type
         List<Question> demoQuestions = questionRepository.findAll(
-            PageRequest.of(0, 5)
+            PageRequest.of(0, 25)
         ).getContent();
 
         if (demoQuestions.isEmpty()) {
@@ -614,6 +614,13 @@ public class MockSessionServiceImpl implements MockSessionService {
 //                	summary.setCorrectOptions(q.getCorrectOptions()); // whatever your correct answer field is
                 	summary.setExplanation(q.getQuestionExplanation());
                 	summary.setHint(q.getHint());
+                	
+                	if (q.getArrangementQuestion() != null) {
+                	    com.BrainBlitz.entity.ArrangementQuestion aq = q.getArrangementQuestion();
+                	    summary.setSegmentsJson(aq.getSegmentsJson());
+                	    summary.setCorrectOrder(aq.getCorrectOrder());
+                	}
+                	
                 return summary;
             })
             .collect(Collectors.toList()));

@@ -191,6 +191,22 @@ public class QuestionServiceImpl implements QuestionService {
         // field is: supportingImagesJson (not supportingImageUrlsJson)
         imageQuestion.setSupportingImagesJson(
             toJson(request.getSupportingImageUrls()));
+        
+        if (request.getOptions() != null) {
+            List<String> optionImageUrls = request.getOptions().stream()
+                .map(opt -> opt.getOptionImageUrl())
+                .collect(Collectors.toList());
+            imageQuestion.setOptionImagesJson(toJson(optionImageUrls));
+            
+            // Also set correctOptionIndex from whichever option has isCorrect=true
+            for (int i = 0; i < request.getOptions().size(); i++) {
+                if (Boolean.TRUE.equals(request.getOptions().get(i).getIsCorrect())) {
+                    imageQuestion.setCorrectOptionIndex(i);
+                    break;
+                }
+            }
+        }
+        
         imageQuestionRepository.save(imageQuestion);
 
         if (request.getOptions() != null) {
@@ -542,16 +558,14 @@ public class QuestionServiceImpl implements QuestionService {
         r.setUpdatedAt(q.getUpdatedAt());
 
         // MCQ options
+     // MCQ options — sets on ROOT response, not on imageQuestion
         List<McqOption> options =
             mcqOptionRepository.findByQuestionIdOrderByOptionOrder(q.getId());
         if (!options.isEmpty()) {
             r.setOptions(options.stream().map(o -> {
-                QuestionResponse.McqOptionResponse opt =
-                    new QuestionResponse.McqOptionResponse();
-                opt.setId(o.getId());
+                QuestionResponse.McqOptionResponse opt = new QuestionResponse.McqOptionResponse();
                 opt.setOptionText(o.getOptionText());
-                opt.setOptionImageUrl(o.getOptionImageUrl());
-                // field: boolean isCorrect → getter: isCorrect()
+                opt.setOptionImageUrl(o.getOptionImageUrl());  // ← image URL is here!
                 opt.setIsCorrect(o.isCorrect());
                 opt.setOptionOrder(o.getOptionOrder());
                 return opt;
@@ -591,17 +605,38 @@ public class QuestionServiceImpl implements QuestionService {
 
         // Image question
         imageQuestionRepository.findByQuestionId(q.getId())
-            .ifPresent(img -> {
-                QuestionResponse.ImageQuestionResponse ir =
-                    new QuestionResponse.ImageQuestionResponse();
-                ir.setId(img.getId());
-                ir.setImageQuestionType(img.getImageQuestionType());
-                ir.setMainImageUrl(img.getMainImageUrl());
-                // field: supportingImagesJson
-                ir.setSupportingImageUrls(
-                    fromJson(img.getSupportingImagesJson()));
-                r.setImageQuestion(ir);
-            });
+        .ifPresent(img -> {
+            QuestionResponse.ImageQuestionResponse ir =
+                new QuestionResponse.ImageQuestionResponse();
+            ir.setId(img.getId());
+            ir.setImageQuestionType(img.getImageQuestionType());
+            ir.setMainImageUrl(img.getMainImageUrl());
+            ir.setSupportingImageUrls(fromJson(img.getSupportingImagesJson()));
+            ir.setOptionImagesJson(img.getOptionImagesJson());
+            ir.setCorrectOptionIndex(img.getCorrectOptionIndex());
+
+            // ADD THIS — build optionImagesJson from mcq_options if not already stored
+            if (img.getOptionImagesJson() == null || img.getOptionImagesJson().isBlank()) {
+                List<McqOption> optList =
+                    mcqOptionRepository.findByQuestionIdOrderByOptionOrder(q.getId());
+                if (!optList.isEmpty()) {
+                    List<String> urls = optList.stream()
+                        .map(McqOption::getOptionImageUrl)
+                        .collect(Collectors.toList());
+                    ir.setOptionImagesJson(toJson(urls));
+                    
+                    // also set correctOptionIndex from isCorrect flag
+                    for (int i = 0; i < optList.size(); i++) {
+                        if (optList.get(i).isCorrect()) {
+                            ir.setCorrectOptionIndex(i);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            r.setImageQuestion(ir);
+        });
 
         // Code snippet
         codeSnippetQuestionRepository.findByQuestionId(q.getId())
