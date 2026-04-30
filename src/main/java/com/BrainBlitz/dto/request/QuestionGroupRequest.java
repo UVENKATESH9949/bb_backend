@@ -11,7 +11,7 @@ public class QuestionGroupRequest {
     @NotNull(message = "Group type is required")
     private GroupType groupType;            // RC, CLOZE, TABLE_DI, BAR_DI etc.
 
-    @NotNull(message = "Exam category is required")
+   
     private ExamCategory examCategory;
 
     @NotNull(message = "Exam type is required")
@@ -30,19 +30,30 @@ public class QuestionGroupRequest {
     // For chart-based DI — image of the chart (alternative to JSON)
     private String diImageUrl;
 
-	public QuestionGroupRequest(@NotNull(message = "Group type is required") GroupType groupType,
-			@NotNull(message = "Exam category is required") ExamCategory examCategory,
-			@NotNull(message = "Exam type is required") ExamType examType, String title, String passageText,
-			String diDataJson, String diImageUrl) {
-		super();
-		this.groupType = groupType;
-		this.examCategory = examCategory;
-		this.examType = examType;
-		this.title = title;
-		this.passageText = passageText;
-		this.diDataJson = diDataJson;
-		this.diImageUrl = diImageUrl;
-	}
+    private Language language;   // lowercase
+
+    private String subject;      // lowercase
+
+    private String topic;        // lowercase
+    
+    public QuestionGroupRequest(@NotNull(message = "Group type is required") GroupType groupType,
+            ExamCategory examCategory,
+            @NotNull(message = "Exam type is required") ExamType examType,
+            String title, String passageText,
+            String diDataJson, String diImageUrl,
+            Language language, String subject, String topic) {
+        super();
+        this.groupType = groupType;
+        this.examCategory = examCategory;
+        this.examType = examType;
+        this.title = title;
+        this.passageText = passageText;
+        this.diDataJson = diDataJson;
+        this.diImageUrl = diImageUrl;
+        this.language = language;
+        this.subject = subject;
+        this.topic = topic;
+    }
 
 	public QuestionGroupRequest() {
 		super();
@@ -103,6 +114,23 @@ public class QuestionGroupRequest {
 	public void setDiImageUrl(String diImageUrl) {
 		this.diImageUrl = diImageUrl;
 	}
+
+	
+	public void setLanguage(Language language) {
+		this.language = language;
+	}
+
+	public void setSubject(String subject) {
+		this.subject = subject;
+	}
+
+	public void setTopic(String topic) {
+		this.topic = topic;
+	}
+
+	public Language getLanguage() { return language; }
+	public String getSubject() { return subject; }
+	public String getTopic() { return topic; }
     
     
 }

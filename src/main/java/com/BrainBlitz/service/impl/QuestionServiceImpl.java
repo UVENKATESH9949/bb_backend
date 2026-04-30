@@ -231,16 +231,14 @@ public class QuestionServiceImpl implements QuestionService {
     public QuestionResponse createQuestionGroup(QuestionGroupRequest request) {
         QuestionGroup group = new QuestionGroup();
         group.setGroupType(request.getGroupType());
-        // field is: String examType (not ExamType enum)
-        group.setExamType(request.getExamType() != null
-            ? request.getExamType().name() : null);
+        group.setExamType(request.getExamType() != null ? request.getExamType().name() : null);
         group.setTitle(request.getTitle());
+        group.setLanguage(request.getLanguage());
+        group.setSubject(request.getSubject());
+        group.setTopic(request.getTopic());
         group.setPassageText(request.getPassageText());
-        // fields are: tableDataJson and chartDataJson (not diDataJson)
         group.setTableDataJson(request.getDiDataJson());
-        // field is: chartImageUrl (not diImageUrl)
         group.setChartImageUrl(request.getDiImageUrl());
-//        group.setExamType(request.getExamCategory());
         questionGroupRepository.save(group);
 
         QuestionResponse response = new QuestionResponse();

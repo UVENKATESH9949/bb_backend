@@ -65,7 +65,7 @@ public class MockSessionServiceImpl implements MockSessionService {
 
         // Fetch up to 5 real questions
         List<Question> demoQuestions = questionRepository
-            .findAll(PageRequest.of(0, 5))
+            .findAll(PageRequest.of(0, 25))
             .getContent();
 
         if (demoQuestions.isEmpty()) {
