@@ -1,6 +1,7 @@
 package com.BrainBlitz.service.impl;
 
 import com.BrainBlitz.dto.request.*;
+import com.BrainBlitz.dto.response.QuestionGroupResponse;
 import com.BrainBlitz.dto.response.QuestionResponse;
 import com.BrainBlitz.dto.response.QuestionSummaryResponse;
 import com.BrainBlitz.entity.*;
@@ -264,6 +265,29 @@ public class QuestionServiceImpl implements QuestionService {
         return createMcqQuestion(request);
     }
 
+    @Override
+    public QuestionGroupResponse getQuestionGroup(Long groupId) {
+        QuestionGroup group = questionGroupRepository.findById(groupId)
+            .orElseThrow(() -> new ResourceNotFoundException("QuestionGroup", groupId));
+
+        QuestionGroupResponse response = new QuestionGroupResponse();
+        response.setId(group.getId());
+        response.setGroupType(group.getGroupType().name());
+        response.setTitle(group.getTitle());
+        response.setExamType(group.getExamType());
+        response.setSubject(group.getSubject());
+        response.setTopic(group.getTopic());
+        response.setLanguage(group.getLanguage().name());
+        response.setPassageText(group.getPassageText());
+        response.setTableDataJson(group.getTableDataJson());
+        response.setChartDataJson(group.getChartDataJson());
+        response.setChartImageUrl(group.getChartImageUrl());
+        response.setBlankCount(group.getBlankCount());
+        response.setInstructions(group.getInstructions());
+        response.setActive(group.isActive());
+        return response;
+    }
+    
     @Override
     public QuestionResponse createCodingQuestion(CodingQuestionRequest request) {
         Question question = buildBaseQuestion(

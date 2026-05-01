@@ -22,6 +22,8 @@ public interface QuestionService {
     QuestionResponse createCodingQuestion(CodingQuestionRequest request);
     QuestionResponse createCodeSnippet(CodeSnippetRequest request);
     QuestionResponse createWritingQuestion(WritingQuestionRequest request);
+    QuestionGroupResponse getQuestionGroup(Long groupId);
+    
 
     // ── Read ──────────────────────────────────────────────────────────
     QuestionResponse getQuestionById(Long id);

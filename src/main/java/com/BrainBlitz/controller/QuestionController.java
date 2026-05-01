@@ -131,6 +131,13 @@ public class QuestionController {
             .body(ApiResponse.success(response, "Writing question created successfully"));
     }
 
+    @GetMapping("/groups/{groupId}")
+    public ResponseEntity<ApiResponse<QuestionGroupResponse>> getQuestionGroup(
+            @PathVariable Long groupId) {
+        QuestionGroupResponse response = questionService.getQuestionGroup(groupId);
+        return ResponseEntity.ok(ApiResponse.success(response, "Group fetched successfully"));
+    }
+    
 
     // ═════════════════════════════════════════════════════════════════
     // READ ENDPOINTS
