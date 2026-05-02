@@ -229,32 +229,41 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public QuestionResponse createQuestionGroup(QuestionGroupRequest request) {
-        QuestionGroup group = new QuestionGroup();
-        group.setGroupType(request.getGroupType());
-        group.setExamType(request.getExamType() != null ? request.getExamType().name() : null);
-        group.setTitle(request.getTitle());
-        group.setLanguage(request.getLanguage());
-        group.setSubject(request.getSubject());
-        group.setTopic(request.getTopic());
-        group.setPassageText(request.getPassageText());
-        group.setTableDataJson(request.getDiDataJson());
-        group.setChartImageUrl(request.getDiImageUrl());
-        questionGroupRepository.save(group);
+public QuestionResponse createQuestionGroup(QuestionGroupRequest request) {
 
-        QuestionResponse response = new QuestionResponse();
-        QuestionResponse.QuestionGroupResponse gr =
-            new QuestionResponse.QuestionGroupResponse();
-        gr.setId(group.getId());
-        gr.setGroupType(group.getGroupType());
-        gr.setTitle(group.getTitle());
-        gr.setPassageText(group.getPassageText());
-        gr.setDiDataJson(group.getTableDataJson());
-        gr.setDiImageUrl(group.getChartImageUrl());
-        response.setGroup(gr);
-        return response;
-    }
+    System.out.error("DEBUG tableDataJson: " + request.getTableDataJson());
+    System.out.error("DEBUG instructions: " + request.getInstructions());
+    System.out.error("DEBUG groupType: " + request.getGroupType());
 
+    QuestionGroup group = new QuestionGroup();
+    group.setGroupType(request.getGroupType());
+    group.setExamType(request.getExamType() != null ? request.getExamType().name() : null);
+    group.setTitle(request.getTitle() != null ? request.getTitle() : "Untitled Group");
+    group.setLanguage(request.getLanguage());
+    group.setSubject(request.getSubject());
+    group.setTopic(request.getTopic());
+    group.setPassageText(request.getPassageText());
+    group.setPassageTextHindi(request.getPassageTextHindi());
+    group.setTableDataJson(request.getTableDataJson());
+    group.setChartDataJson(request.getChartDataJson());
+    group.setChartImageUrl(request.getChartImageUrl());
+    group.setBlankCount(request.getBlankCount());
+    group.setInstructions(request.getInstructions());
+    group.setInstructionsHindi(request.getInstructionsHindi());
+    questionGroupRepository.save(group);
+
+    QuestionResponse response = new QuestionResponse();
+    QuestionResponse.QuestionGroupResponse gr = new QuestionResponse.QuestionGroupResponse();
+    gr.setId(group.getId());
+    gr.setGroupType(group.getGroupType());
+    gr.setTitle(group.getTitle());
+    gr.setPassageText(group.getPassageText());
+    gr.setTableDataJson(group.getTableDataJson());
+    gr.setChartDataJson(group.getChartDataJson());
+    gr.setChartImageUrl(group.getChartImageUrl());
+    response.setGroup(gr);
+    return response;
+}
     @Override
     public QuestionResponse addQuestionsToGroup(Long groupId,
                                                  McqQuestionRequest request) {

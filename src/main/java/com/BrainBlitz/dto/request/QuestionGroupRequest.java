@@ -3,134 +3,198 @@
 package com.BrainBlitz.dto.request;
 
 import com.BrainBlitz.enums.*;
-import jakarta.validation.constraints.*;
-import lombok.*;
+import jakarta.validation.constraints.NotNull;
 
 public class QuestionGroupRequest {
 
     @NotNull(message = "Group type is required")
-    private GroupType groupType;            // RC, CLOZE, TABLE_DI, BAR_DI etc.
+    private GroupType groupType;   // RC, CLOZE, TABLE_DI, BAR_DI etc.
 
-   
     private ExamCategory examCategory;
 
     @NotNull(message = "Exam type is required")
     private ExamType examType;
 
-    private String title;                   // optional heading for the group
+    private String title;
 
-    // For RC and cloze_test
+    // Passage (RC / Cloze)
     private String passageText;
+    private String passageTextHindi;
 
-    // For TABLE_DI — JSON table data
-    // For BAR_DI, PIE_DI, LINE_DI — Chart.js compatible JSON
-    // e.g. {"labels":["Jan","Feb"],"datasets":[{"data":[10,20]}]}
-    private String diDataJson;
+    // DI Data
+    private String tableDataJson;
+    private String chartDataJson;
+    private String chartImageUrl;
 
-    // For chart-based DI — image of the chart (alternative to JSON)
-    private String diImageUrl;
+    // Cloze Test
+    private Integer blankCount;
 
-    private Language language;   // lowercase
+    // Instructions
+    private String instructions;
+    private String instructionsHindi;
 
-    private String subject;      // lowercase
+    // Metadata
+    private Language language;
+    private String subject;
+    private String topic;
 
-    private String topic;        // lowercase
-    
-    public QuestionGroupRequest(@NotNull(message = "Group type is required") GroupType groupType,
+    // Default Constructor
+    public QuestionGroupRequest() {}
+
+    // Full Constructor
+    public QuestionGroupRequest(
+            GroupType groupType,
             ExamCategory examCategory,
-            @NotNull(message = "Exam type is required") ExamType examType,
-            String title, String passageText,
-            String diDataJson, String diImageUrl,
-            Language language, String subject, String topic) {
-        super();
+            ExamType examType,
+            String title,
+            String passageText,
+            String passageTextHindi,
+            String tableDataJson,
+            String chartDataJson,
+            String chartImageUrl,
+            Integer blankCount,
+            String instructions,
+            String instructionsHindi,
+            Language language,
+            String subject,
+            String topic
+    ) {
         this.groupType = groupType;
         this.examCategory = examCategory;
         this.examType = examType;
         this.title = title;
         this.passageText = passageText;
-        this.diDataJson = diDataJson;
-        this.diImageUrl = diImageUrl;
+        this.passageTextHindi = passageTextHindi;
+        this.tableDataJson = tableDataJson;
+        this.chartDataJson = chartDataJson;
+        this.chartImageUrl = chartImageUrl;
+        this.blankCount = blankCount;
+        this.instructions = instructions;
+        this.instructionsHindi = instructionsHindi;
         this.language = language;
         this.subject = subject;
         this.topic = topic;
     }
 
-	public QuestionGroupRequest() {
-		super();
-	}
+    // Getters & Setters
 
-	public GroupType getGroupType() {
-		return groupType;
-	}
+    public GroupType getGroupType() {
+        return groupType;
+    }
 
-	public void setGroupType(GroupType groupType) {
-		this.groupType = groupType;
-	}
+    public void setGroupType(GroupType groupType) {
+        this.groupType = groupType;
+    }
 
-	public ExamCategory getExamCategory() {
-		return examCategory;
-	}
+    public ExamCategory getExamCategory() {
+        return examCategory;
+    }
 
-	public void setExamCategory(ExamCategory examCategory) {
-		this.examCategory = examCategory;
-	}
+    public void setExamCategory(ExamCategory examCategory) {
+        this.examCategory = examCategory;
+    }
 
-	public ExamType getExamType() {
-		return examType;
-	}
+    public ExamType getExamType() {
+        return examType;
+    }
 
-	public void setExamType(ExamType examType) {
-		this.examType = examType;
-	}
+    public void setExamType(ExamType examType) {
+        this.examType = examType;
+    }
 
-	public String getTitle() {
-		return title;
-	}
+    public String getTitle() {
+        return title;
+    }
 
-	public void setTitle(String title) {
-		this.title = title;
-	}
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-	public String getPassageText() {
-		return passageText;
-	}
+    public String getPassageText() {
+        return passageText;
+    }
 
-	public void setPassageText(String passageText) {
-		this.passageText = passageText;
-	}
+    public void setPassageText(String passageText) {
+        this.passageText = passageText;
+    }
 
-	public String getDiDataJson() {
-		return diDataJson;
-	}
+    public String getPassageTextHindi() {
+        return passageTextHindi;
+    }
 
-	public void setDiDataJson(String diDataJson) {
-		this.diDataJson = diDataJson;
-	}
+    public void setPassageTextHindi(String passageTextHindi) {
+        this.passageTextHindi = passageTextHindi;
+    }
 
-	public String getDiImageUrl() {
-		return diImageUrl;
-	}
+    public String getTableDataJson() {
+        return tableDataJson;
+    }
 
-	public void setDiImageUrl(String diImageUrl) {
-		this.diImageUrl = diImageUrl;
-	}
+    public void setTableDataJson(String tableDataJson) {
+        this.tableDataJson = tableDataJson;
+    }
 
-	
-	public void setLanguage(Language language) {
-		this.language = language;
-	}
+    public String getChartDataJson() {
+        return chartDataJson;
+    }
 
-	public void setSubject(String subject) {
-		this.subject = subject;
-	}
+    public void setChartDataJson(String chartDataJson) {
+        this.chartDataJson = chartDataJson;
+    }
 
-	public void setTopic(String topic) {
-		this.topic = topic;
-	}
+    public String getChartImageUrl() {
+        return chartImageUrl;
+    }
 
-	public Language getLanguage() { return language; }
-	public String getSubject() { return subject; }
-	public String getTopic() { return topic; }
-    
-    
+    public void setChartImageUrl(String chartImageUrl) {
+        this.chartImageUrl = chartImageUrl;
+    }
+
+    public Integer getBlankCount() {
+        return blankCount;
+    }
+
+    public void setBlankCount(Integer blankCount) {
+        this.blankCount = blankCount;
+    }
+
+    public String getInstructions() {
+        return instructions;
+    }
+
+    public void setInstructions(String instructions) {
+        this.instructions = instructions;
+    }
+
+    public String getInstructionsHindi() {
+        return instructionsHindi;
+    }
+
+    public void setInstructionsHindi(String instructionsHindi) {
+        this.instructionsHindi = instructionsHindi;
+    }
+
+    public Language getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(Language language) {
+        this.language = language;
+    }
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
+    }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
 }

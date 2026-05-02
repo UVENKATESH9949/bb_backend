@@ -1,3 +1,12 @@
+package com.BrainBlitz.dto.response;
+
+import java.util.List;
+import java.time.LocalDateTime;
+
+import com.BrainBlitz.enums.*;
+import com.BrainBlitz.entity.*;
+
+
 public class QuestionSummaryResponse {
 
     // ── Common fields ──────────────────────────────────────────
