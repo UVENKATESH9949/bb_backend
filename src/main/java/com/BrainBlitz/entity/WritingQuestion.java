@@ -1,5 +1,7 @@
 package com.BrainBlitz.entity;
 
+import com.BrainBlitz.enums.GradingStatus;
+import com.BrainBlitz.enums.GradingType;
 import com.BrainBlitz.enums.WritingType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -45,11 +47,38 @@ public class WritingQuestion {
 
     // Grading status — for Phase 3 AI grading
     // Values: PENDING, AI_GRADED, MANUALLY_REVIEWED
-    private String gradingStatus = "PENDING";
+    private GradingStatus gradingStatus;
+    
+ // After speechDurationSeconds
 
+    @Column
+    private String transcriptUrl;           // For LISTENING_COMP — transcript PDF/text URL
+
+    @Column(columnDefinition = "TEXT")
+    private String promptHindi;             // Hindi version of prompt (bilingual support)
+
+    @Column(columnDefinition = "TEXT")
+    private String sampleAnswerHindi;       // Hindi sample answer (bilingual support)
+
+    @Column
+    private Integer maxFileSizeMb;          // For SPEECH_ROUND — max audio upload size
+
+    @Enumerated(EnumType.STRING)
+    @Column
+    private GradingType gradingType;        // AI_GRADED, MANUAL, AUTO — instead of plain String
+
+    @Column
+    private Double maxScore;                // Max marks achievable for this writing task
+
+    @Column(columnDefinition = "TEXT")
+    private String rubricJson;              // Detailed scoring rubric (separate from evaluationCriteriaJson)
+
+    
 	public WritingQuestion(Long id, Question question, WritingType writingType, String prompt, Integer minWords,
 			Integer maxWords, String evaluationCriteriaJson, String sampleAnswer, String audioUrl,
-			Integer speechDurationSeconds, String gradingStatus) {
+			Integer speechDurationSeconds, GradingStatus gradingStatus, String transcriptUrl, String promptHindi,
+			String sampleAnswerHindi, Integer maxFileSizeMb, GradingType gradingType, Double maxScore,
+			String rubricJson) {
 		super();
 		this.id = id;
 		this.question = question;
@@ -62,6 +91,13 @@ public class WritingQuestion {
 		this.audioUrl = audioUrl;
 		this.speechDurationSeconds = speechDurationSeconds;
 		this.gradingStatus = gradingStatus;
+		this.transcriptUrl = transcriptUrl;
+		this.promptHindi = promptHindi;
+		this.sampleAnswerHindi = sampleAnswerHindi;
+		this.maxFileSizeMb = maxFileSizeMb;
+		this.gradingType = gradingType;
+		this.maxScore = maxScore;
+		this.rubricJson = rubricJson;
 	}
 
 	public WritingQuestion() {
@@ -148,13 +184,69 @@ public class WritingQuestion {
 		this.speechDurationSeconds = speechDurationSeconds;
 	}
 
-	public String getGradingStatus() {
+	public GradingStatus getGradingStatus() {
 		return gradingStatus;
 	}
 
-	public void setGradingStatus(String gradingStatus) {
+	public void setGradingStatus(GradingStatus gradingStatus) {
 		this.gradingStatus = gradingStatus;
 	}
-    
-    
+
+	public String getTranscriptUrl() {
+		return transcriptUrl;
+	}
+
+	public void setTranscriptUrl(String transcriptUrl) {
+		this.transcriptUrl = transcriptUrl;
+	}
+
+	public String getPromptHindi() {
+		return promptHindi;
+	}
+
+	public void setPromptHindi(String promptHindi) {
+		this.promptHindi = promptHindi;
+	}
+
+	public String getSampleAnswerHindi() {
+		return sampleAnswerHindi;
+	}
+
+	public void setSampleAnswerHindi(String sampleAnswerHindi) {
+		this.sampleAnswerHindi = sampleAnswerHindi;
+	}
+
+	public Integer getMaxFileSizeMb() {
+		return maxFileSizeMb;
+	}
+
+	public void setMaxFileSizeMb(Integer maxFileSizeMb) {
+		this.maxFileSizeMb = maxFileSizeMb;
+	}
+
+	public GradingType getGradingType() {
+		return gradingType;
+	}
+
+	public void setGradingType(GradingType gradingType) {
+		this.gradingType = gradingType;
+	}
+
+	public Double getMaxScore() {
+		return maxScore;
+	}
+
+	public void setMaxScore(Double maxScore) {
+		this.maxScore = maxScore;
+	}
+
+	public String getRubricJson() {
+		return rubricJson;
+	}
+
+	public void setRubricJson(String rubricJson) {
+		this.rubricJson = rubricJson;
+	}
+
+	
 }

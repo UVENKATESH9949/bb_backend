@@ -1,9 +1,13 @@
 package com.BrainBlitz.entity;
 
 import jakarta.persistence.*;
+import com.BrainBlitz.converter.StringListConverter;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @Table(name = "fill_blank_answers")
@@ -58,8 +62,9 @@ public class FillBlankAnswer {
     // All these are correct for the same blank
     // CRITICAL — without this, auto-grading fails
     // because users write answers differently
+    @Convert(converter = StringListConverter.class)
     @Column(columnDefinition = "TEXT")
-    private String alternateAnswers;   // stored as JSON string
+    private List<String> alternateAnswers;  // stored as JSON string
 
     // ─────────────────────────────────────────────
     // VALIDATION FLAGS
@@ -92,7 +97,7 @@ public class FillBlankAnswer {
     @Column
     private Integer expectedAnswerLength;
 
-	public FillBlankAnswer(Long id, Question question, int blankPosition, String correctAnswer, String alternateAnswers,
+	public FillBlankAnswer(Long id, Question question, int blankPosition, String correctAnswer, List<String> alternateAnswers,
 			boolean caseSensitive, boolean exactMatch, String blankHint, Integer expectedAnswerLength) {
 		super();
 		this.id = id;
@@ -142,11 +147,11 @@ public class FillBlankAnswer {
 		this.correctAnswer = correctAnswer;
 	}
 
-	public String getAlternateAnswers() {
+	public List<String> getAlternateAnswers() {
 		return alternateAnswers;
 	}
 
-	public void setAlternateAnswers(String alternateAnswers) {
+	public void setAlternateAnswers(List<String> alternateAnswers) {
 		this.alternateAnswers = alternateAnswers;
 	}
 

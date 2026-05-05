@@ -8,6 +8,8 @@ import com.BrainBlitz.exception.ResourceNotFoundException;
 import com.BrainBlitz.repository.*;
 import com.BrainBlitz.service.*;
 import com.BrainBlitz.dto.response.MockResultResponse;
+import com.BrainBlitz.dto.response.QuestionSummaryResponse.GroupPayload;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -48,10 +50,39 @@ public class MockSessionServiceImpl implements MockSessionService {
     @Autowired
     private UserLevelService userLevelService;
 
+    private GroupPayload groupPayload; // RC, CLOZE, all DI types
+    
+    @Autowired
+    private QuestionGroupRepository questionGroupRepository;
     // ─────────────────────────────────────────────
     // START MOCK
     // ─────────────────────────────────────────────
 
+ // ── JSON helper — add this to MockSessionServiceImpl ──────────────
+    @Autowired
+    private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
+
+    @SuppressWarnings("unchecked")
+    private List<String> fromJson(String json) {
+        if (json == null) return null;
+        try {
+            return objectMapper.readValue(json, List.class);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    private static final Set<QuestionType> GROUP_TYPES = Set.of(
+    	    QuestionType.READING_COMPREHENSION,
+    	    QuestionType.CLOZE_TEST,
+    	    QuestionType.CASELET_DI,
+    	    QuestionType.TABLE_DI,
+    	    QuestionType.BAR_CHART_DI,
+    	    QuestionType.PIE_CHART_DI,
+    	    QuestionType.LINE_GRAPH_DI
+    	);
+    
+    
     @Override
     public MockSessionResponse startMock(Long userId, MockSessionRequest request) {
 
@@ -92,8 +123,13 @@ public class MockSessionServiceImpl implements MockSessionService {
         demoSession.setMaxPossibleScore(demoQuestions.size() * 100.0);
         demoSession.setUserLevelAtTime(anyUser.getLevel());    // ✅ was missing — NOT NULL in DB
 
-        mockSessionRepository.save(demoSession);
-        return mapToSessionResponse(demoSession, demoQuestions);
+        try {
+            mockSessionRepository.save(demoSession);
+            return mapToSessionResponse(demoSession, demoQuestions);
+        } catch (Exception e) {
+            e.printStackTrace(); // prints clean stacktrace to console
+            throw e;
+        }
 
         // ── DEMO MODE END ─────────────────────────────────────────
 
@@ -541,14 +577,87 @@ public class MockSessionServiceImpl implements MockSessionService {
         response.setStartTime(session.getStartTime());
         response.setCreatedAt(session.getCreatedAt());
         response.setTitle(session.getExamType().name() + " Mock Test");
-        response.setInstructions(
-            "Answer all questions. Timer runs for the full test.");
+        response.setInstructions("Answer all questions. Timer runs for the full test.");
         response.setTimeLimitMinutes(30);
 
-        response.setQuestions(questions.stream()
-            .map(this::mapToQuestionSummary)
-            .collect(Collectors.toList()));
+        // ── Step 1: separate grouped vs standalone ────────────────
+        Map<Long, List<Question>> groupedMap = new LinkedHashMap<>();
+        List<Question> standaloneList = new ArrayList<>();
 
+        for (Question q : questions) {
+        	if (q.getGroupId() != null) {
+                groupedMap
+                    .computeIfAbsent(q.getGroupId(), k -> new ArrayList<>())
+                    .add(q);
+            } else {
+                standaloneList.add(q);
+            }
+        }
+
+        // ── Step 2: bulk fetch all groups in ONE query ────────────
+        Map<Long, QuestionGroup> groupCache = new HashMap<>();
+        if (!groupedMap.isEmpty()) {
+            questionGroupRepository
+                .findByIdIn(groupedMap.keySet())
+                .forEach(g -> groupCache.put(g.getId(), g));
+        }
+
+        // ── Step 3: build ordered QuestionItem list ───────────────
+        List<MockSessionResponse.QuestionItem> questionItems = new ArrayList<>();
+        Set<Long> addedGroupIds = new HashSet<>();
+
+        for (Question q : questions) {
+        	
+        	System.out.println("DEBUG Q id=" + q.getId() 
+            + " type=" + q.getQuestionType() 
+            + " groupId=" + q.getGroupId());
+        	
+        	if (q.getGroupId() != null) {
+
+                Long gid = q.getGroupId();
+
+                // Add group only once
+                if (!addedGroupIds.contains(gid)) {
+                    addedGroupIds.add(gid);
+
+                    QuestionGroup g = groupCache.get(gid);
+                    List<Question> siblings = groupedMap.get(gid);
+
+                    List<QuestionSummaryResponse> subQuestions = siblings.stream()
+                        .sorted(Comparator.comparingInt(
+                            sq -> sq.getQuestionOrderInGroup() != null
+                                ? sq.getQuestionOrderInGroup() : 0))
+                        .map(this::mapToQuestionSummary)
+                        .collect(Collectors.toList());
+
+                    MockSessionResponse.GroupedQuestionItem groupedItem =
+                        new MockSessionResponse.GroupedQuestionItem(
+                            gid,
+                            g != null ? g.getGroupType()         : null,
+                            g != null ? g.getTitle()             : null,
+                            g != null ? g.getInstructions()      : null,
+                            g != null ? g.getInstructionsHindi() : null,
+                            g != null ? g.getPassageText()       : null,
+                            g != null ? g.getPassageTextHindi()  : null,
+                            g != null ? g.getBlankCount()        : null,
+                            g != null ? g.getTableDataJson()     : null,
+                            g != null ? g.getChartDataJson()     : null,
+                            g != null ? g.getChartImageUrl()     : null,
+                            subQuestions
+                        );
+
+                    questionItems.add(
+                        MockSessionResponse.QuestionItem.grouped(groupedItem));
+                }
+
+            } else {
+                questionItems.add(
+                    MockSessionResponse.QuestionItem.standalone(
+                        mapToQuestionSummary(q)));
+            }
+        }
+
+        response.setQuestions(questionItems);
         return response;
     }
 
@@ -557,6 +666,21 @@ public class MockSessionServiceImpl implements MockSessionService {
     // Branches on QuestionType to populate the correct payload
     // ─────────────────────────────────────────────────────────────────
 
+    private GroupPayload buildGroupPayload(Question q) {
+        if (q.getGroupId() == null) return null;
+        QuestionGroup g = questionGroupRepository
+            .findById(q.getGroupId()).orElse(null);
+        if (g == null) return null;
+
+        return new QuestionSummaryResponse.GroupPayload(
+            g.getId(), g.getGroupType(), g.getTitle(),
+            g.getInstructions(), g.getInstructionsHindi(),
+            g.getPassageText(), g.getPassageTextHindi(),
+            g.getBlankCount(), g.getTableDataJson(),
+            g.getChartDataJson(), g.getChartImageUrl()
+        );
+    }
+    
     private QuestionSummaryResponse mapToQuestionSummary(Question q) {
 
         QuestionSummaryResponse summary = new QuestionSummaryResponse();
@@ -648,6 +772,21 @@ public class MockSessionServiceImpl implements MockSessionService {
                 summary.setWritingPayload(buildWritingPayload(q));
                 break;
 
+            case READING_COMPREHENSION:
+            case CLOZE_TEST:
+            case CASELET_DI:
+                summary.setGroupPayload(buildGroupPayload(q));
+                summary.setMcqPayload(buildMcqPayload(q));  // child questions still have MCQ options
+                break;
+
+            case TABLE_DI:
+            case BAR_CHART_DI:
+            case PIE_CHART_DI:
+            case LINE_GRAPH_DI:
+                summary.setGroupPayload(buildGroupPayload(q));
+                summary.setMcqPayload(buildMcqPayload(q));
+                break;
+                
             default:
                 // Unknown type — common fields still returned, no payload
                 break;
@@ -711,7 +850,7 @@ public class MockSessionServiceImpl implements MockSessionService {
                 .map(fba -> new QuestionSummaryResponse.BlankDto(
                     fba.getBlankPosition(),
                     fba.getCorrectAnswer(),
-                    fba.getAlternateAnswers(),
+                    fba.getAlternateAnswers(),   // ← already List<String>, pass directly
                     fba.isCaseSensitive(),
                     fba.isExactMatch(),
                     fba.getBlankHint(),
@@ -721,7 +860,7 @@ public class MockSessionServiceImpl implements MockSessionService {
 
         return new QuestionSummaryResponse.FillBlankPayload(blanks);
     }
-
+    
     private QuestionSummaryResponse.ArrangementPayload buildArrangementPayload(
             Question q) {
         ArrangementQuestion aq = q.getArrangementQuestion();
@@ -729,8 +868,8 @@ public class MockSessionServiceImpl implements MockSessionService {
 
         return new QuestionSummaryResponse.ArrangementPayload(
             aq.getArrangementType(),
-            aq.getSegmentsJson(),
-            aq.getSegmentsJsonHindi(),
+            aq.getSegments(),              // ← already List<String>, no fromJson
+            aq.getSegmentsJsonHindi(),     // ← already List<String>, no fromJson
             aq.getCorrectOrder(),
             aq.getAlternateCorrectOrders(),
             aq.getFixedOpeningSentence(),
@@ -773,13 +912,18 @@ public class MockSessionServiceImpl implements MockSessionService {
             cq.getInputFormat(),
             cq.getOutputFormat(),
             cq.getConstraints(),
+            cq.getRealWorldContext(),
             cq.getStarterCodeJson(),
+            cq.getSolutionCodeJson(),
+            cq.getDriverCodeJson(),
             cq.getSupportedLanguagesJson(),
             cq.getExpectedTimeComplexity(),
             cq.getExpectedSpaceComplexity(),
-            cq.getWhyThisDataStructure(),
-            cq.getWhyThisApproach(),
-            cq.getAlternateApproachesJson(),
+            cq.getApproachesJson(),
+            cq.getHintsJson(),
+            cq.getPrerequisitesJson(),
+            cq.getCommonMistakesJson(),
+            cq.getCompanyTagsJson(),
             cq.getBuggyCodeJson(),
             cq.getBugDescription()
         );

@@ -35,6 +35,28 @@ public class TestCase {
     @Column(nullable = false)
     private Integer weightage = 1;          // marks weight for this test case
 
+    @Column(nullable = false)
+    private Boolean isEdgeCase = false;    // flags boundary/corner case inputs
+
+    @Column(nullable = false)
+    private Integer displayOrder = 0;      // order in which sample cases are shown to user
+    
+	public Boolean getIsEdgeCase() {
+		return isEdgeCase;
+	}
+
+	public void setIsEdgeCase(Boolean isEdgeCase) {
+		this.isEdgeCase = isEdgeCase;
+	}
+
+	public Integer getDisplayOrder() {
+		return displayOrder;
+	}
+
+	public void setDisplayOrder(Integer displayOrder) {
+		this.displayOrder = displayOrder;
+	}
+
 	public TestCase(Long id, CodingQuestion codingQuestion, String input, String expectedOutput, Boolean isSample,
 			Boolean isHidden, String explanation, Integer weightage) {
 		super();

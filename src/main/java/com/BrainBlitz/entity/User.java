@@ -6,7 +6,7 @@ import jakarta.persistence.Enumerated;
 import java.util.List;
 import jakarta.persistence.*;
 import lombok.*;
-
+import com.BrainBlitz.converter.StringListConverter;
 
 
 @Entity
@@ -40,6 +40,8 @@ public class User {
     private String currentToken;
     
     @ElementCollection
+    @CollectionTable(name = "user_target_exams", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "target_exams")
     private List<String> targetExams;
 
     // ✅ Manually written getters & setters — no Lombok needed

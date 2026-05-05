@@ -7,183 +7,120 @@ import lombok.AllArgsConstructor;
 
 import java.util.List;
 
+import com.BrainBlitz.converter.StringListConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "coding_questions")
 public class CodingQuestion {
 
-    // ─────────────────────────────────────────────
-    // PRIMARY KEY
-    // ─────────────────────────────────────────────
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    // ─────────────────────────────────────────────
-    // PARENT REFERENCE
-    // ─────────────────────────────────────────────
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "question_id", nullable = false, unique = true)
     @JsonIgnore
     private Question question;
 
-    // ─────────────────────────────────────────────
-    // PROBLEM STATEMENT
-    // ─────────────────────────────────────────────
-
-    // Full scenario-based problem description
-    // Supports markdown — can include bold, code blocks, lists
-    // e.g. "A company has N employees. Each employee has a
-    //       salary stored in an array. Find the second highest
-    //       salary without using sorting..."
+    // ── Problem Definition ────────────────────────────────
     @Column(nullable = false, columnDefinition = "TEXT")
     private String problemStatement;
 
     @Column(columnDefinition = "TEXT")
     private String problemStatementHindi;
 
-    // ─────────────────────────────────────────────
-    // INPUT / OUTPUT FORMAT
-    // ─────────────────────────────────────────────
-
-    // Describes how input will be provided
-    // e.g. "First line contains N (size of array)
-    //       Second line contains N space-separated integers"
     @Column(nullable = false, columnDefinition = "TEXT")
     private String inputFormat;
 
-    // Describes expected output format
-    // e.g. "Print a single integer — the second highest salary"
     @Column(nullable = false, columnDefinition = "TEXT")
     private String outputFormat;
 
-    // ─────────────────────────────────────────────
-    // CONSTRAINTS
-    // ─────────────────────────────────────────────
-
-    // Mathematical constraints on input values
-    // e.g. "1 ≤ N ≤ 10^5
-    //       1 ≤ salary[i] ≤ 10^9
-    //       All salaries are distinct"
     @Column(nullable = false, columnDefinition = "TEXT")
     private String constraints;
 
-    // ─────────────────────────────────────────────
-    // CODE STARTER SNIPPET
-    // ─────────────────────────────────────────────
+    // Real-world context — BrainBlitz differentiator
+    // e.g. "Used in fraud detection, email deduplication"
+    @Column(columnDefinition = "TEXT")
+    private String realWorldContext;
 
-    // Pre-written starter code given to user
-    // JSON map of language → starter code
-    // e.g. {
-    //   "JAVA": "import java.util.*;\npublic class Solution {\n    public static void main(String[] args) {\n        // Write your code here\n    }\n}",
-    //   "PYTHON": "def solution(arr):\n    # Write your code here\n    pass",
-    //   "CPP": "#include<bits/stdc++.h>\nusing namespace std;\nint main() {\n    // Write your code here\n}"
-    // }
+    // ── Code Templates ────────────────────────────────────
+    // JSON map of language → code
+    // e.g. {"JAVA": "...", "PYTHON": "...", "CPP": "..."}
     @Column(columnDefinition = "TEXT")
     private String starterCodeJson;
 
-    // ─────────────────────────────────────────────
-    // SOLUTION CODE (hidden from user)
-    // ─────────────────────────────────────────────
-
-    // Admin's reference solution — never shown to user during attempt
-    // Shown only after submission or when viewing explanation
-    // JSON map of language → solution code
     @Column(columnDefinition = "TEXT")
     private String solutionCodeJson;
 
-    // ─────────────────────────────────────────────
-    // SUPPORTED LANGUAGES
-    // ─────────────────────────────────────────────
+    @Column(columnDefinition = "TEXT")
+    private String driverCodeJson;       // hidden wrapper, never shown to user
 
-    // JSON array of supported programming languages
-    // e.g. ["JAVA", "PYTHON", "CPP", "C"]
     @Column(nullable = false, columnDefinition = "TEXT")
     private String supportedLanguagesJson;
 
-    // ─────────────────────────────────────────────
-    // COMPLEXITY
-    // ─────────────────────────────────────────────
-
-    // Expected time complexity of optimal solution
-    // e.g. "O(n log n)" or "O(n)"
-    @Column
+    // ── Complexity ────────────────────────────────────────
     private String expectedTimeComplexity;
-
-    // Expected space complexity
-    // e.g. "O(1)" or "O(n)"
-    @Column
     private String expectedSpaceComplexity;
 
-    // ─────────────────────────────────────────────
-    // BRAINBLITZ USP FIELDS
-    // ─────────────────────────────────────────────
-
-    // Why a specific data structure was chosen
-    // e.g. "We use a HashSet here because we need O(1)
-    //       lookup time. A simple array would give O(n)
-    //       lookup making the overall solution O(n²)"
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String whyThisDataStructure;
-
-    // Why this specific approach was chosen over others
-    // e.g. "We use sliding window instead of brute force
-    //       because brute force would be O(n²) while
-    //       sliding window gives us O(n)"
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String whyThisApproach;
-
-    // JSON array of alternate approaches with complexity
-    // e.g. [
-    //   {
-    //     "approach": "Brute Force",
-    //     "description": "Check all pairs",
-    //     "timeComplexity": "O(n²)",
-    //     "spaceComplexity": "O(1)",
-    //     "whyNotIdeal": "Too slow for large inputs"
-    //   },
-    //   {
-    //     "approach": "Sorting",
-    //     "description": "Sort and pick second last",
-    //     "timeComplexity": "O(n log n)",
-    //     "spaceComplexity": "O(1)",
-    //     "whyNotIdeal": "Modifies original array"
-    //   }
-    // ]
+    // ── Approaches (replaces whyThisApproach, whyThisDataStructure, alternateApproachesJson)
+    // JSON array — always brute force first, optimal last
+    // Each approach:
+    // {
+    //   "order": 1,
+    //   "type": "BRUTE_FORCE" | "BETTER" | "OPTIMAL",
+    //   "title": "Nested Loop",
+    //   "ahaMessage": "Check every pair — simple but slow",
+    //   "intuition": "For each element scan the rest",
+    //   "whenToUseThis": "Only when N < 100",
+    //   "timeComplexity": "O(n²)",
+    //   "spaceComplexity": "O(1)",
+    //   "steps": ["step1", "step2"],
+    //   "languageNotes": {"JAVA": "...", "PYTHON": "..."},
+    //   "codePerLanguage": {"JAVA": "...", "PYTHON": "..."}
+    // }
     @Column(columnDefinition = "TEXT")
-    private String alternateApproachesJson;
+    private String approachesJson;
 
-    // ─────────────────────────────────────────────
-    // CODE DEBUG SPECIFIC
-    // ─────────────────────────────────────────────
+    // ── Learning Aids ─────────────────────────────────────
+    // 3 progressive hints — vague to specific
+    @Convert(converter = StringListConverter.class)
+    @Column(columnDefinition = "TEXT")
+    private List<String> hintsJson;
 
-    // For CODE_DEBUG type only
-    // The buggy version of the code shown to user
-    // JSON map of language → buggy code
+    // Concepts student must know before attempting
+    // e.g. ["Arrays", "HashMaps", "Hashing concept"]
+    @Convert(converter = StringListConverter.class)
+    @Column(columnDefinition = "TEXT")
+    private List<String> prerequisitesJson;
+
+    // Common mistakes tagged by type
+    // [{"type": "BOUNDARY", "description": "Not handling empty array"},
+    //  {"type": "LANGUAGE", "description": "Using == instead of .equals() in Java"}]
+    @Column(columnDefinition = "TEXT")
+    private String commonMistakesJson;
+
+    // ── Company Tags (free access — BrainBlitz differentiator) ──
+    // e.g. ["Amazon", "TCS", "Google", "Infosys"]
+    @Convert(converter = StringListConverter.class)
+    @Column(columnDefinition = "TEXT")
+    private List<String> companyTagsJson;
+
+    // ── CODE_DEBUG specific ───────────────────────────────
+    // JSON map of language → buggy code shown to user
     @Column(columnDefinition = "TEXT")
     private String buggyCodeJson;
 
-    // Description of what bug exists
-    // e.g. "The loop boundary condition is wrong causing
-    //       ArrayIndexOutOfBoundsException for edge cases"
     @Column(columnDefinition = "TEXT")
     private String bugDescription;
 
-    // ─────────────────────────────────────────────
-    // CHILD RELATIONSHIPS
-    // ─────────────────────────────────────────────
-
-    // Test cases — added separately after question creation
+    // ── Relationships ─────────────────────────────────────
     @OneToMany(mappedBy = "codingQuestion",
                cascade = CascadeType.ALL,
                orphanRemoval = true)
-    @OrderBy("id ASC")
+    @OrderBy("displayOrder ASC")
     private List<TestCase> testCases;
 
-    // Step by step solution — added separately
     @OneToMany(mappedBy = "codingQuestion",
                cascade = CascadeType.ALL,
                orphanRemoval = true)
@@ -191,10 +128,11 @@ public class CodingQuestion {
     private List<SolutionStep> solutionSteps;
 
 	public CodingQuestion(Long id, Question question, String problemStatement, String problemStatementHindi,
-			String inputFormat, String outputFormat, String constraints, String starterCodeJson,
-			String solutionCodeJson, String supportedLanguagesJson, String expectedTimeComplexity,
-			String expectedSpaceComplexity, String whyThisDataStructure, String whyThisApproach,
-			String alternateApproachesJson, String buggyCodeJson, String bugDescription, List<TestCase> testCases,
+			String inputFormat, String outputFormat, String constraints, String realWorldContext,
+			String starterCodeJson, String solutionCodeJson, String driverCodeJson, String supportedLanguagesJson,
+			String expectedTimeComplexity, String expectedSpaceComplexity, String approachesJson,
+			List<String> hintsJson, List<String> prerequisitesJson, String commonMistakesJson,
+			List<String> companyTagsJson, String buggyCodeJson, String bugDescription, List<TestCase> testCases,
 			List<SolutionStep> solutionSteps) {
 		super();
 		this.id = id;
@@ -204,14 +142,18 @@ public class CodingQuestion {
 		this.inputFormat = inputFormat;
 		this.outputFormat = outputFormat;
 		this.constraints = constraints;
+		this.realWorldContext = realWorldContext;
 		this.starterCodeJson = starterCodeJson;
 		this.solutionCodeJson = solutionCodeJson;
+		this.driverCodeJson = driverCodeJson;
 		this.supportedLanguagesJson = supportedLanguagesJson;
 		this.expectedTimeComplexity = expectedTimeComplexity;
 		this.expectedSpaceComplexity = expectedSpaceComplexity;
-		this.whyThisDataStructure = whyThisDataStructure;
-		this.whyThisApproach = whyThisApproach;
-		this.alternateApproachesJson = alternateApproachesJson;
+		this.approachesJson = approachesJson;
+		this.hintsJson = hintsJson;
+		this.prerequisitesJson = prerequisitesJson;
+		this.commonMistakesJson = commonMistakesJson;
+		this.companyTagsJson = companyTagsJson;
 		this.buggyCodeJson = buggyCodeJson;
 		this.bugDescription = bugDescription;
 		this.testCases = testCases;
@@ -278,6 +220,14 @@ public class CodingQuestion {
 		this.constraints = constraints;
 	}
 
+	public String getRealWorldContext() {
+		return realWorldContext;
+	}
+
+	public void setRealWorldContext(String realWorldContext) {
+		this.realWorldContext = realWorldContext;
+	}
+
 	public String getStarterCodeJson() {
 		return starterCodeJson;
 	}
@@ -292,6 +242,14 @@ public class CodingQuestion {
 
 	public void setSolutionCodeJson(String solutionCodeJson) {
 		this.solutionCodeJson = solutionCodeJson;
+	}
+
+	public String getDriverCodeJson() {
+		return driverCodeJson;
+	}
+
+	public void setDriverCodeJson(String driverCodeJson) {
+		this.driverCodeJson = driverCodeJson;
 	}
 
 	public String getSupportedLanguagesJson() {
@@ -318,28 +276,44 @@ public class CodingQuestion {
 		this.expectedSpaceComplexity = expectedSpaceComplexity;
 	}
 
-	public String getWhyThisDataStructure() {
-		return whyThisDataStructure;
+	public String getApproachesJson() {
+		return approachesJson;
 	}
 
-	public void setWhyThisDataStructure(String whyThisDataStructure) {
-		this.whyThisDataStructure = whyThisDataStructure;
+	public void setApproachesJson(String approachesJson) {
+		this.approachesJson = approachesJson;
 	}
 
-	public String getWhyThisApproach() {
-		return whyThisApproach;
+	public List<String> getHintsJson() {
+		return hintsJson;
 	}
 
-	public void setWhyThisApproach(String whyThisApproach) {
-		this.whyThisApproach = whyThisApproach;
+	public void setHintsJson(List<String> hintsJson) {
+		this.hintsJson = hintsJson;
 	}
 
-	public String getAlternateApproachesJson() {
-		return alternateApproachesJson;
+	public List<String> getPrerequisitesJson() {
+		return prerequisitesJson;
 	}
 
-	public void setAlternateApproachesJson(String alternateApproachesJson) {
-		this.alternateApproachesJson = alternateApproachesJson;
+	public void setPrerequisitesJson(List<String> prerequisitesJson) {
+		this.prerequisitesJson = prerequisitesJson;
+	}
+
+	public String getCommonMistakesJson() {
+		return commonMistakesJson;
+	}
+
+	public void setCommonMistakesJson(String commonMistakesJson) {
+		this.commonMistakesJson = commonMistakesJson;
+	}
+
+	public List<String> getCompanyTagsJson() {
+		return companyTagsJson;
+	}
+
+	public void setCompanyTagsJson(List<String> companyTagsJson) {
+		this.companyTagsJson = companyTagsJson;
 	}
 
 	public String getBuggyCodeJson() {
@@ -373,6 +347,9 @@ public class CodingQuestion {
 	public void setSolutionSteps(List<SolutionStep> solutionSteps) {
 		this.solutionSteps = solutionSteps;
 	}
+
+    // ── Getters & Setters ─────────────────────────────────
+    // ... (keep all existing ones, add for new fields)
     
     
 }

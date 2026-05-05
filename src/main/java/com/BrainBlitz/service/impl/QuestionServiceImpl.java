@@ -1,21 +1,28 @@
 package com.BrainBlitz.service.impl;
 
 import com.BrainBlitz.dto.request.*;
+
 import com.BrainBlitz.dto.response.QuestionGroupResponse;
 import com.BrainBlitz.dto.response.QuestionResponse;
 import com.BrainBlitz.dto.response.QuestionSummaryResponse;
 import com.BrainBlitz.entity.*;
 import com.BrainBlitz.enums.*;
+import com.BrainBlitz.enums.GradingType;
 import com.BrainBlitz.exception.ResourceNotFoundException;
 import com.BrainBlitz.repository.*;
 import com.BrainBlitz.service.QuestionService;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,6 +40,13 @@ public class QuestionServiceImpl implements QuestionService {
     private final WritingQuestionRepository writingQuestionRepository;
     private final QuestionExplanationRepository questionExplanationRepository;
     private final ObjectMapper objectMapper;
+    
+    @Autowired
+    private MockAnswerRepository mockAnswerRepository;
+    
+    @Autowired
+    private  TestCaseRepository testCaseRepository;
+    
 
     public QuestionServiceImpl(
             QuestionRepository questionRepository,
@@ -123,6 +137,15 @@ public class QuestionServiceImpl implements QuestionService {
         );
         question = questionRepository.save(question);
 
+        QuestionExplanation qe = request.getQuestionExplanation();
+        if (qe != null) {
+            qe.setQuestion(question);
+            if (qe.getMethods() != null) {
+                qe.getMethods().forEach(method -> method.setQuestionExplanation(qe));
+            }
+            questionExplanationRepository.save(qe);
+        }
+        
         final Question savedQuestion = question;
         List<FillBlankAnswer> blanks = request.getBlanks().stream()
             .map(b -> {
@@ -131,7 +154,7 @@ public class QuestionServiceImpl implements QuestionService {
                 fba.setBlankPosition(b.getBlankPosition());
                 fba.setCorrectAnswer(b.getCorrectAnswer());
                 // field is: String alternateAnswers (not alternateAnswersJson)
-                fba.setAlternateAnswers(toJson(b.getAlternateAnswers()));
+                fba.setAlternateAnswers(b.getAlternateAnswers());
                 fba.setCaseSensitive(
                     b.getCaseSensitive() != null ? b.getCaseSensitive() : false);
                 return fba;
@@ -159,10 +182,19 @@ public class QuestionServiceImpl implements QuestionService {
         );
         question = questionRepository.save(question);
 
+        QuestionExplanation qe = request.getQuestionExplanation();
+        if (qe != null) {
+            qe.setQuestion(question);
+            if (qe.getMethods() != null) {
+                qe.getMethods().forEach(method -> method.setQuestionExplanation(qe));
+            }
+            questionExplanationRepository.save(qe);
+        }
+        
         ArrangementQuestion arrangement = new ArrangementQuestion();
         arrangement.setQuestion(question);
         arrangement.setArrangementType(request.getArrangementType());
-        arrangement.setSegmentsJson(toJson(request.getSegments()));
+        arrangement.setSegments(request.getSegments());
         arrangement.setCorrectOrder(request.getCorrectOrder());
         arrangementQuestionRepository.save(arrangement);
 
@@ -185,6 +217,15 @@ public class QuestionServiceImpl implements QuestionService {
         );
         question = questionRepository.save(question);
 
+        QuestionExplanation qe = request.getQuestionExplanation();
+        if (qe != null) {
+            qe.setQuestion(question);
+            if (qe.getMethods() != null) {
+                qe.getMethods().forEach(method -> method.setQuestionExplanation(qe));
+            }
+            questionExplanationRepository.save(qe);
+        }
+        
         ImageQuestion imageQuestion = new ImageQuestion();
         imageQuestion.setQuestion(question);
         imageQuestion.setImageQuestionType(request.getImageQuestionType());
@@ -231,10 +272,10 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
 public QuestionResponse createQuestionGroup(QuestionGroupRequest request) {
 
-    System.out.error("DEBUG tableDataJson: " + request.getTableDataJson());
-    System.out.error("DEBUG instructions: " + request.getInstructions());
-    System.out.error("DEBUG groupType: " + request.getGroupType());
-
+    System.err.println("DEBUG tableDataJson: " + request.getTableDataJson());
+    System.err.println("DEBUG instructions: " + request.getInstructions());
+    System.err.println("DEBUG groupType: " + request.getGroupType());
+   
     QuestionGroup group = new QuestionGroup();
     group.setGroupType(request.getGroupType());
     group.setExamType(request.getExamType() != null ? request.getExamType().name() : null);
@@ -252,6 +293,7 @@ public QuestionResponse createQuestionGroup(QuestionGroupRequest request) {
     group.setInstructionsHindi(request.getInstructionsHindi());
     questionGroupRepository.save(group);
 
+    
     QuestionResponse response = new QuestionResponse();
     QuestionResponse.QuestionGroupResponse gr = new QuestionResponse.QuestionGroupResponse();
     gr.setId(group.getId());
@@ -313,21 +355,45 @@ public QuestionResponse createQuestionGroup(QuestionGroupRequest request) {
         CodingQuestion codingQuestion = new CodingQuestion();
         codingQuestion.setQuestion(question);
         codingQuestion.setProblemStatement(request.getProblemStatement());
+        codingQuestion.setProblemStatementHindi(request.getProblemStatement());
         codingQuestion.setInputFormat(request.getInputFormat());
         codingQuestion.setOutputFormat(request.getOutputFormat());
         codingQuestion.setConstraints(request.getConstraints());
-        // field is: starterCodeJson (not codeSnippet)
-        codingQuestion.setStarterCodeJson(request.getCodeSnippet());
-        // field is: solutionCodeJson (not solutionCode)
+        codingQuestion.setRealWorldContext(request.getRealWorldContext());
+        codingQuestion.setStarterCodeJson(request.getStarterCode());
         codingQuestion.setSolutionCodeJson(request.getSolutionCode());
-        codingQuestion.setSupportedLanguagesJson(
-            toJson(request.getSupportedLanguages()));
-        // field is: expectedTimeComplexity (not timeComplexity)
-        codingQuestion.setExpectedTimeComplexity(request.getTimeComplexity());
-        // field is: expectedSpaceComplexity (not spaceComplexity)
-        codingQuestion.setExpectedSpaceComplexity(request.getSpaceComplexity());
+        codingQuestion.setDriverCodeJson(request.getDriverCode());
+        codingQuestion.setSupportedLanguagesJson(toJson(request.getSupportedLanguages()));
+        codingQuestion.setExpectedTimeComplexity(request.getExpectedTimeComplexity());
+        codingQuestion.setExpectedSpaceComplexity(request.getExpectedSpaceComplexity());
+        codingQuestion.setApproachesJson(request.getApproachesJson());
+        codingQuestion.setHintsJson(request.getHintsJson());
+        codingQuestion.setPrerequisitesJson(request.getPrerequisitesJson());
+        codingQuestion.setCommonMistakesJson(request.getCommonMistakesJson());
+        codingQuestion.setCompanyTagsJson(request.getCompanyTagsJson());
+        codingQuestion.setBuggyCodeJson(request.getBuggyCode());
+        codingQuestion.setBugDescription(request.getBugDescription());
         codingQuestionRepository.save(codingQuestion);
 
+        if (request.getTestCases() != null && !request.getTestCases().isEmpty()) {
+            List<TestCase> testCases = request.getTestCases().stream()
+                .map(tc -> {
+                    TestCase testCase = new TestCase();
+                    testCase.setCodingQuestion(codingQuestion);
+                    testCase.setInput(tc.getInput());
+                    testCase.setExpectedOutput(tc.getExpectedOutput());
+                    testCase.setExplanation(tc.getExplanation());
+                    testCase.setIsSample(tc.getIsSample() != null ? tc.getIsSample() : false);
+                    testCase.setIsHidden(tc.getIsHidden() != null ? tc.getIsHidden() : false);
+                    testCase.setIsEdgeCase(tc.getIsEdgeCase() != null ? tc.getIsEdgeCase() : false);
+                    testCase.setWeightage(tc.getWeightage() != null ? tc.getWeightage() : 1);
+                    testCase.setDisplayOrder(tc.getDisplayOrder() != null ? tc.getDisplayOrder() : 0);
+                    return testCase;
+                })
+                .collect(Collectors.toList());
+            testCaseRepository.saveAll(testCases);
+        }
+        
         return getQuestionById(question.getId());
     }
 
@@ -378,15 +444,32 @@ public QuestionResponse createQuestionGroup(QuestionGroupRequest request) {
         QuestionType qType = mapWritingTypeToQuestionType(request.getWritingType());
 
         Question question = buildBaseQuestion(
-            request.getPrompt(), qType,
-            request.getExamCategory(), request.getExamType(),
-            request.getSubject(), request.getTopic(),
-            request.getDifficultyLevel(), Language.ENGLISH,
-            request.getMarks(), request.getNegativeMarks(),
-            request.getHint(), null,
-            request.getIsAiGenerated(), null
-        );
-        question = questionRepository.save(question);
+        	    request.getQuestionText(), qType,          // ✅ use questionText not prompt
+        	    request.getExamCategory(), request.getExamType(),
+        	    request.getSubject(), request.getTopic(),
+        	    request.getDifficultyLevel(), request.getLanguage(),  // ✅ not hardcoded
+        	    request.getMarks(), request.getNegativeMarks(),
+        	    request.getHint(), null,
+        	    request.getIsAiGenerated(), null
+        	);
+        question = questionRepository.saveAndFlush(question);
+        
+        QuestionExplanation qe = request.getQuestionExplanation();
+        if (qe != null) {
+            qe.setQuestion(question);
+            
+            List<ExplanationMethod> methods = qe.getMethods();
+            qe.setMethods(new ArrayList<>());
+            
+            QuestionExplanation savedQe = questionExplanationRepository.save(qe);
+            
+            if (methods != null) {
+                methods.forEach(method -> method.setQuestionExplanation(savedQe));
+                savedQe.setMethods(methods);
+                questionExplanationRepository.save(savedQe);
+            }
+        }
+        
 
         WritingQuestion writingQuestion = new WritingQuestion();
         writingQuestion.setQuestion(question);
@@ -400,7 +483,14 @@ public QuestionResponse createQuestionGroup(QuestionGroupRequest request) {
         writingQuestion.setAudioUrl(request.getAudioUrl());
         writingQuestion.setSpeechDurationSeconds(
             request.getSpeechDurationSeconds());
-        writingQuestion.setGradingStatus("PENDING");
+        
+        writingQuestion.setTranscriptUrl(request.getTranscriptUrl());
+        writingQuestion.setMaxFileSizeMb(request.getMaxFileSizeMb());
+        writingQuestion.setGradingType(request.getGradingType());   // ✅ enum not String
+        writingQuestion.setMaxScore(request.getMaxScore());
+        writingQuestion.setRubricJson(request.getRubricJson());
+        writingQuestion.setGradingStatus(GradingStatus.PENDING);
+        
         writingQuestionRepository.save(writingQuestion);
 
         return getQuestionById(question.getId());
@@ -486,17 +576,69 @@ public QuestionResponse createQuestionGroup(QuestionGroupRequest request) {
     // DELETE METHODS
     // ═════════════════════════════════════════════════════════════════
 
-    @Override
-    public void deleteQuestion(Long id) {
-        if (!questionRepository.existsById(id))
-            throw new ResourceNotFoundException("Question", id);
-        questionRepository.deleteById(id);
-    }
+ // ═════════════════════════════════════════════════════════════════
+ // DELETE METHODS
+ // ═════════════════════════════════════════════════════════════════
 
-    @Override
-    public void bulkDeleteQuestions(List<Long> ids) {
-        questionRepository.deleteAllById(ids);
-    }
+ @Override
+ @Transactional
+ public void deleteQuestion(Long id) {
+     Question question = questionRepository.findById(id)
+         .orElseThrow(() -> new ResourceNotFoundException("Question", id));
+
+     Long groupId = question.getGroupId(); // capture before delete
+
+     // Step 1 — remove mock_answers FK first
+     mockAnswerRepository.deleteByQuestionId(id);
+
+     // Step 2 — delete the question (JPA cascade handles
+     //           mcq_options, fill_blank_answers, arrangement_questions,
+     //           image_questions, coding_questions, code_snippet_questions,
+     //           writing_questions, question_explanations)
+     questionRepository.deleteById(id);
+
+     // Step 3 — if this was a grouped question, check if parent is now empty
+     if (groupId != null) {
+         boolean siblingsExist = questionRepository.existsByGroupId(groupId);
+         if (!siblingsExist) {
+             questionGroupRepository.deleteById(groupId);
+         }
+     }
+ }
+
+ @Override
+ @Transactional
+ public void bulkDeleteQuestions(List<Long> ids) {
+     if (ids == null || ids.isEmpty()) return;
+
+     // Fetch only existing questions
+     List<Question> questions = questionRepository.findAllById(ids);
+     if (questions.isEmpty()) return;
+
+     // Capture all groupIds before deletion
+     Set<Long> groupIds = questions.stream()
+         .map(Question::getGroupId)
+         .filter(gid -> gid != null)
+         .collect(Collectors.toSet());
+
+     List<Long> existingIds = questions.stream()
+         .map(Question::getId)
+         .collect(Collectors.toList());
+
+     // Step 1 — remove mock_answers FK for all
+     existingIds.forEach(mockAnswerRepository::deleteByQuestionId);
+
+     // Step 2 — delete all questions
+     questionRepository.deleteAllById(existingIds);
+
+     // Step 3 — for each affected group, delete parent if no children remain
+     for (Long groupId : groupIds) {
+         boolean siblingsExist = questionRepository.existsByGroupId(groupId);
+         if (!siblingsExist) {
+             questionGroupRepository.deleteById(groupId);
+         }
+     }
+ }
 
 
     // ═════════════════════════════════════════════════════════════════
@@ -615,7 +757,7 @@ public QuestionResponse createQuestionGroup(QuestionGroupRequest request) {
                 fbr.setBlankPosition(b.getBlankPosition());
                 fbr.setCorrectAnswer(b.getCorrectAnswer());
                 // field: String alternateAnswers (not alternateAnswersJson)
-                fbr.setAlternateAnswers(fromJson(b.getAlternateAnswers()));
+                fbr.setAlternateAnswers(b.getAlternateAnswers());
                 // field: boolean caseSensitive → getter: isCaseSensitive()
                 fbr.setCaseSensitive(b.isCaseSensitive());
                 return fbr;
@@ -629,7 +771,7 @@ public QuestionResponse createQuestionGroup(QuestionGroupRequest request) {
                     new QuestionResponse.ArrangementResponse();
                 ar.setId(a.getId());
                 ar.setArrangementType(a.getArrangementType());
-                ar.setSegments(fromJson(a.getSegmentsJson()));
+                ar.setSegments(a.getSegments());
                 ar.setCorrectOrder(a.getCorrectOrder());
                 r.setArrangement(ar);
             });
@@ -687,26 +829,65 @@ public QuestionResponse createQuestionGroup(QuestionGroupRequest request) {
 
         // Coding question
         codingQuestionRepository.findByQuestionId(q.getId())
-            .ifPresent(cq -> {
-                QuestionResponse.CodingQuestionResponse cqr =
-                    new QuestionResponse.CodingQuestionResponse();
-                cqr.setId(cq.getId());
-                cqr.setProblemStatement(cq.getProblemStatement());
-                cqr.setInputFormat(cq.getInputFormat());
-                cqr.setOutputFormat(cq.getOutputFormat());
-                cqr.setConstraints(cq.getConstraints());
-                // field: starterCodeJson
-                cqr.setCodeSnippet(cq.getStarterCodeJson());
-                // field: solutionCodeJson
-                cqr.setSolutionCode(cq.getSolutionCodeJson());
-                // field: expectedTimeComplexity
-                cqr.setTimeComplexity(cq.getExpectedTimeComplexity());
-                // field: expectedSpaceComplexity
-                cqr.setSpaceComplexity(cq.getExpectedSpaceComplexity());
-                cqr.setWhyThisDataStructure(cq.getWhyThisDataStructure());
-                cqr.setWhyThisApproach(cq.getWhyThisApproach());
-                r.setCodingQuestion(cqr);
-            });
+        .ifPresent(cq -> {
+            QuestionResponse.CodingQuestionResponse cqr =
+                new QuestionResponse.CodingQuestionResponse();
+            cqr.setId(cq.getId());
+            cqr.setProblemStatement(cq.getProblemStatement());
+            cqr.setInputFormat(cq.getInputFormat());
+            cqr.setOutputFormat(cq.getOutputFormat());
+            cqr.setConstraints(cq.getConstraints());
+            cqr.setRealWorldContext(cq.getRealWorldContext());
+            cqr.setStarterCodeJson(cq.getStarterCodeJson());
+            cqr.setSolutionCodeJson(cq.getSolutionCodeJson());
+            cqr.setDriverCodeJson(cq.getDriverCodeJson());
+            cqr.setExpectedTimeComplexity(cq.getExpectedTimeComplexity());
+            cqr.setExpectedSpaceComplexity(cq.getExpectedSpaceComplexity());
+            cqr.setApproachesJson(cq.getApproachesJson());
+            cqr.setHintsJson(cq.getHintsJson());
+            cqr.setPrerequisitesJson(cq.getPrerequisitesJson());
+            cqr.setCommonMistakesJson(cq.getCommonMistakesJson());
+            cqr.setCompanyTagsJson(cq.getCompanyTagsJson());
+            cqr.setBuggyCodeJson(cq.getBuggyCodeJson());
+            cqr.setBugDescription(cq.getBugDescription());
+
+            // supported languages
+            if (cq.getSupportedLanguagesJson() != null) {
+                try {
+                    List<ProgrammingLanguage> langs = objectMapper.readValue(
+                        cq.getSupportedLanguagesJson(),
+                        new TypeReference<List<ProgrammingLanguage>>() {});
+                    cqr.setSupportedLanguages(langs);
+                } catch (Exception e) {
+                    cqr.setSupportedLanguages(List.of());
+                }
+            }
+
+            // test cases
+         // replace the existing testCases mapping with this
+            List<QuestionResponse.TestCaseResponse> tcList = testCaseRepository
+                .findByCodingQuestionId(cq.getId())
+                .stream()
+                .map(tc -> new QuestionResponse.TestCaseResponse(
+                    tc.getId(), tc.getInput(), tc.getExpectedOutput(),
+                    tc.getIsSample(), tc.getIsHidden(),
+                    tc.getExplanation(), tc.getWeightage(),
+                    tc.getIsEdgeCase(), tc.getDisplayOrder()))
+                .collect(Collectors.toList());
+            cqr.setTestCases(tcList);
+
+            // solution steps
+            if (cq.getSolutionSteps() != null) {
+                cqr.setSolutionSteps(cq.getSolutionSteps().stream()
+                    .map(ss -> new QuestionResponse.SolutionStepResponse(
+                        ss.getId(), ss.getStepNumber(), ss.getStepTitle(),
+                        ss.getStepDescription(), ss.getCodeAtThisStep(),
+                        ss.getImageUrl()))
+                    .collect(Collectors.toList()));
+            }
+
+            r.setCodingQuestion(cqr);
+        });
 
         // Writing question
         writingQuestionRepository.findByQuestionId(q.getId())
@@ -723,6 +904,11 @@ public QuestionResponse createQuestionGroup(QuestionGroupRequest request) {
                 wqr.setAudioUrl(wq.getAudioUrl());
                 wqr.setSpeechDurationSeconds(wq.getSpeechDurationSeconds());
                 wqr.setGradingStatus(wq.getGradingStatus());
+                wqr.setTranscriptUrl(wq.getTranscriptUrl());
+                wqr.setMaxFileSizeMb(wq.getMaxFileSizeMb());
+                wqr.setGradingType(wq.getGradingType());
+                wqr.setMaxScore(wq.getMaxScore());
+                wqr.setRubricJson(wq.getRubricJson());
                 r.setWritingQuestion(wqr);
             });
 
@@ -750,6 +936,19 @@ public QuestionResponse createQuestionGroup(QuestionGroupRequest request) {
             return null;
         }
     }
+    
+    private <T> List<T> fromJsonList(String json, Class<T> clazz) {
+        try {
+            if (json == null) return null;
+            return objectMapper.readValue(
+                json,
+                objectMapper.getTypeFactory().constructCollectionType(List.class, clazz)
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("Error converting JSON to List", e);
+        }
+    }
+    
 
     // ── Enum mapping helpers ──────────────────────────────────────────
 

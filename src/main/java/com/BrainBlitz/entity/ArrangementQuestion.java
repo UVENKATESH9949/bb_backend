@@ -1,5 +1,8 @@
 package com.BrainBlitz.entity;
 
+import java.util.List;
+
+import com.BrainBlitz.converter.StringListConverter;
 import com.BrainBlitz.enums.ArrangementType;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -51,13 +54,13 @@ public class ArrangementQuestion {
     //   {"label": "R", "text": "He came back home"},
     //   {"label": "S", "text": "He cooked dinner"}
     // ]
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String segmentsJson;
+    @Convert(converter = StringListConverter.class)
+    @Column(nullable = false, columnDefinition = "TEXT", name = "segments_json")
+    private List<String> segments;
 
-    // Hindi version of segments (for bilingual questions)
-    @Column(columnDefinition = "TEXT")
-    private String segmentsJsonHindi;
-
+    @Convert(converter = StringListConverter.class)
+    @Column(columnDefinition = "TEXT", name = "segments_json_hindi")
+    private List<String> segmentsJsonHindi;
     // ─────────────────────────────────────────────
     // CORRECT ORDER
     // ─────────────────────────────────────────────
@@ -108,15 +111,15 @@ public class ArrangementQuestion {
     @Column(nullable = false)
     private boolean isDragDrop = true;
 
-	public ArrangementQuestion(Long id, Question question, ArrangementType arrangementType, String segmentsJson,
-			String segmentsJsonHindi, String correctOrder, String alternateCorrectOrders, String fixedOpeningSentence,
-			String fixedClosingSentence, String fixedOpeningSentenceHindi, String fixedClosingSentenceHindi,
-			boolean isDragDrop) {
+	public ArrangementQuestion(Long id, Question question, ArrangementType arrangementType, List<String> segments,
+			List<String> segmentsJsonHindi, String correctOrder, String alternateCorrectOrders,
+			String fixedOpeningSentence, String fixedClosingSentence, String fixedOpeningSentenceHindi,
+			String fixedClosingSentenceHindi, boolean isDragDrop) {
 		super();
 		this.id = id;
 		this.question = question;
 		this.arrangementType = arrangementType;
-		this.segmentsJson = segmentsJson;
+		this.segments = segments;
 		this.segmentsJsonHindi = segmentsJsonHindi;
 		this.correctOrder = correctOrder;
 		this.alternateCorrectOrders = alternateCorrectOrders;
@@ -155,19 +158,19 @@ public class ArrangementQuestion {
 		this.arrangementType = arrangementType;
 	}
 
-	public String getSegmentsJson() {
-		return segmentsJson;
+	public List<String> getSegments() {
+		return segments;
 	}
 
-	public void setSegmentsJson(String segmentsJson) {
-		this.segmentsJson = segmentsJson;
+	public void setSegments(List<String> segments) {
+		this.segments = segments;
 	}
 
-	public String getSegmentsJsonHindi() {
+	public List<String> getSegmentsJsonHindi() {
 		return segmentsJsonHindi;
 	}
 
-	public void setSegmentsJsonHindi(String segmentsJsonHindi) {
+	public void setSegmentsJsonHindi(List<String> segmentsJsonHindi) {
 		this.segmentsJsonHindi = segmentsJsonHindi;
 	}
 
@@ -226,6 +229,7 @@ public class ArrangementQuestion {
 	public void setDragDrop(boolean isDragDrop) {
 		this.isDragDrop = isDragDrop;
 	}
-    
+
+	
     
 }

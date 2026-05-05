@@ -688,133 +688,99 @@ public class QuestionResponse {
         private String inputFormat;
         private String outputFormat;
         private String constraints;
-        private String codeSnippet;
-        private String solutionCode;
+        private String realWorldContext;
+        private String starterCodeJson;
+        private String solutionCodeJson;
+        private String driverCodeJson;
         private List<ProgrammingLanguage> supportedLanguages;
-        private String timeComplexity;
-        private String spaceComplexity;
-        private String whyThisDataStructure;
-        private String whyThisApproach;
-        private List<String> alternateApproaches;
+        private String expectedTimeComplexity;
+        private String expectedSpaceComplexity;
+        private String approachesJson;
+        private List<String> hintsJson;
+        private List<String> prerequisitesJson;
+        private String commonMistakesJson;
+        private List<String> companyTagsJson;
+        private String buggyCodeJson;
+        private String bugDescription;
         private List<TestCaseResponse> testCases;
         private List<SolutionStepResponse> solutionSteps;
-		public CodingQuestionResponse(Long id, String problemStatement, String inputFormat, String outputFormat,
-				String constraints, String codeSnippet, String solutionCode,
-				List<ProgrammingLanguage> supportedLanguages, String timeComplexity, String spaceComplexity,
-				String whyThisDataStructure, String whyThisApproach, List<String> alternateApproaches,
-				List<TestCaseResponse> testCases, List<SolutionStepResponse> solutionSteps) {
-			super();
-			this.id = id;
-			this.problemStatement = problemStatement;
-			this.inputFormat = inputFormat;
-			this.outputFormat = outputFormat;
-			this.constraints = constraints;
-			this.codeSnippet = codeSnippet;
-			this.solutionCode = solutionCode;
-			this.supportedLanguages = supportedLanguages;
-			this.timeComplexity = timeComplexity;
-			this.spaceComplexity = spaceComplexity;
-			this.whyThisDataStructure = whyThisDataStructure;
-			this.whyThisApproach = whyThisApproach;
-			this.alternateApproaches = alternateApproaches;
-			this.testCases = testCases;
-			this.solutionSteps = solutionSteps;
-		}
-		public CodingQuestionResponse() {
-			super();
-		}
-		public Long getId() {
-			return id;
-		}
-		public void setId(Long id) {
-			this.id = id;
-		}
-		public String getProblemStatement() {
-			return problemStatement;
-		}
-		public void setProblemStatement(String problemStatement) {
-			this.problemStatement = problemStatement;
-		}
-		public String getInputFormat() {
-			return inputFormat;
-		}
-		public void setInputFormat(String inputFormat) {
-			this.inputFormat = inputFormat;
-		}
-		public String getOutputFormat() {
-			return outputFormat;
-		}
-		public void setOutputFormat(String outputFormat) {
-			this.outputFormat = outputFormat;
-		}
-		public String getConstraints() {
-			return constraints;
-		}
-		public void setConstraints(String constraints) {
-			this.constraints = constraints;
-		}
-		public String getCodeSnippet() {
-			return codeSnippet;
-		}
-		public void setCodeSnippet(String codeSnippet) {
-			this.codeSnippet = codeSnippet;
-		}
-		public String getSolutionCode() {
-			return solutionCode;
-		}
-		public void setSolutionCode(String solutionCode) {
-			this.solutionCode = solutionCode;
-		}
-		public List<ProgrammingLanguage> getSupportedLanguages() {
-			return supportedLanguages;
-		}
-		public void setSupportedLanguages(List<ProgrammingLanguage> supportedLanguages) {
-			this.supportedLanguages = supportedLanguages;
-		}
-		public String getTimeComplexity() {
-			return timeComplexity;
-		}
-		public void setTimeComplexity(String timeComplexity) {
-			this.timeComplexity = timeComplexity;
-		}
-		public String getSpaceComplexity() {
-			return spaceComplexity;
-		}
-		public void setSpaceComplexity(String spaceComplexity) {
-			this.spaceComplexity = spaceComplexity;
-		}
-		public String getWhyThisDataStructure() {
-			return whyThisDataStructure;
-		}
-		public void setWhyThisDataStructure(String whyThisDataStructure) {
-			this.whyThisDataStructure = whyThisDataStructure;
-		}
-		public String getWhyThisApproach() {
-			return whyThisApproach;
-		}
-		public void setWhyThisApproach(String whyThisApproach) {
-			this.whyThisApproach = whyThisApproach;
-		}
-		public List<String> getAlternateApproaches() {
-			return alternateApproaches;
-		}
-		public void setAlternateApproaches(List<String> alternateApproaches) {
-			this.alternateApproaches = alternateApproaches;
-		}
-		public List<TestCaseResponse> getTestCases() {
-			return testCases;
-		}
-		public void setTestCases(List<TestCaseResponse> testCases) {
-			this.testCases = testCases;
-		}
-		public List<SolutionStepResponse> getSolutionSteps() {
-			return solutionSteps;
-		}
-		public void setSolutionSteps(List<SolutionStepResponse> solutionSteps) {
-			this.solutionSteps = solutionSteps;
-		}
-        
-        
+
+        public CodingQuestionResponse() {}
+
+        public CodingQuestionResponse(Long id, String problemStatement, String inputFormat,
+                String outputFormat, String constraints, String realWorldContext,
+                String starterCodeJson, String solutionCodeJson, String driverCodeJson,
+                List<ProgrammingLanguage> supportedLanguages, String expectedTimeComplexity,
+                String expectedSpaceComplexity, String approachesJson, List<String> hintsJson,
+                List<String> prerequisitesJson, String commonMistakesJson,
+                List<String> companyTagsJson, String buggyCodeJson, String bugDescription,
+                List<TestCaseResponse> testCases, List<SolutionStepResponse> solutionSteps) {
+            this.id = id;
+            this.problemStatement = problemStatement;
+            this.inputFormat = inputFormat;
+            this.outputFormat = outputFormat;
+            this.constraints = constraints;
+            this.realWorldContext = realWorldContext;
+            this.starterCodeJson = starterCodeJson;
+            this.solutionCodeJson = solutionCodeJson;
+            this.driverCodeJson = driverCodeJson;
+            this.supportedLanguages = supportedLanguages;
+            this.expectedTimeComplexity = expectedTimeComplexity;
+            this.expectedSpaceComplexity = expectedSpaceComplexity;
+            this.approachesJson = approachesJson;
+            this.hintsJson = hintsJson;
+            this.prerequisitesJson = prerequisitesJson;
+            this.commonMistakesJson = commonMistakesJson;
+            this.companyTagsJson = companyTagsJson;
+            this.buggyCodeJson = buggyCodeJson;
+            this.bugDescription = bugDescription;
+            this.testCases = testCases;
+            this.solutionSteps = solutionSteps;
+        }
+
+        // Getters and Setters
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
+        public String getProblemStatement() { return problemStatement; }
+        public void setProblemStatement(String problemStatement) { this.problemStatement = problemStatement; }
+        public String getInputFormat() { return inputFormat; }
+        public void setInputFormat(String inputFormat) { this.inputFormat = inputFormat; }
+        public String getOutputFormat() { return outputFormat; }
+        public void setOutputFormat(String outputFormat) { this.outputFormat = outputFormat; }
+        public String getConstraints() { return constraints; }
+        public void setConstraints(String constraints) { this.constraints = constraints; }
+        public String getRealWorldContext() { return realWorldContext; }
+        public void setRealWorldContext(String realWorldContext) { this.realWorldContext = realWorldContext; }
+        public String getStarterCodeJson() { return starterCodeJson; }
+        public void setStarterCodeJson(String starterCodeJson) { this.starterCodeJson = starterCodeJson; }
+        public String getSolutionCodeJson() { return solutionCodeJson; }
+        public void setSolutionCodeJson(String solutionCodeJson) { this.solutionCodeJson = solutionCodeJson; }
+        public String getDriverCodeJson() { return driverCodeJson; }
+        public void setDriverCodeJson(String driverCodeJson) { this.driverCodeJson = driverCodeJson; }
+        public List<ProgrammingLanguage> getSupportedLanguages() { return supportedLanguages; }
+        public void setSupportedLanguages(List<ProgrammingLanguage> supportedLanguages) { this.supportedLanguages = supportedLanguages; }
+        public String getExpectedTimeComplexity() { return expectedTimeComplexity; }
+        public void setExpectedTimeComplexity(String expectedTimeComplexity) { this.expectedTimeComplexity = expectedTimeComplexity; }
+        public String getExpectedSpaceComplexity() { return expectedSpaceComplexity; }
+        public void setExpectedSpaceComplexity(String expectedSpaceComplexity) { this.expectedSpaceComplexity = expectedSpaceComplexity; }
+        public String getApproachesJson() { return approachesJson; }
+        public void setApproachesJson(String approachesJson) { this.approachesJson = approachesJson; }
+        public List<String> getHintsJson() { return hintsJson; }
+        public void setHintsJson(List<String> hintsJson) { this.hintsJson = hintsJson; }
+        public List<String> getPrerequisitesJson() { return prerequisitesJson; }
+        public void setPrerequisitesJson(List<String> prerequisitesJson) { this.prerequisitesJson = prerequisitesJson; }
+        public String getCommonMistakesJson() { return commonMistakesJson; }
+        public void setCommonMistakesJson(String commonMistakesJson) { this.commonMistakesJson = commonMistakesJson; }
+        public List<String> getCompanyTagsJson() { return companyTagsJson; }
+        public void setCompanyTagsJson(List<String> companyTagsJson) { this.companyTagsJson = companyTagsJson; }
+        public String getBuggyCodeJson() { return buggyCodeJson; }
+        public void setBuggyCodeJson(String buggyCodeJson) { this.buggyCodeJson = buggyCodeJson; }
+        public String getBugDescription() { return bugDescription; }
+        public void setBugDescription(String bugDescription) { this.bugDescription = bugDescription; }
+        public List<TestCaseResponse> getTestCases() { return testCases; }
+        public void setTestCases(List<TestCaseResponse> testCases) { this.testCases = testCases; }
+        public List<SolutionStepResponse> getSolutionSteps() { return solutionSteps; }
+        public void setSolutionSteps(List<SolutionStepResponse> solutionSteps) { this.solutionSteps = solutionSteps; }
     }
 
     
@@ -826,8 +792,11 @@ public class QuestionResponse {
         private Boolean isHidden;
         private String explanation;
         private Integer weightage;
+        private Boolean isEdgeCase;
+        private Integer displayOrder;
+        
 		public TestCaseResponse(Long id, String input, String expectedOutput, Boolean isSample, Boolean isHidden,
-				String explanation, Integer weightage) {
+				String explanation, Integer weightage,Boolean isEdgeCase,Integer displayOrder) {
 			super();
 			this.id = id;
 			this.input = input;
@@ -836,6 +805,8 @@ public class QuestionResponse {
 			this.isHidden = isHidden;
 			this.explanation = explanation;
 			this.weightage = weightage;
+			this.isEdgeCase = isEdgeCase;
+			this.displayOrder = displayOrder;
 		}
 		public TestCaseResponse() {
 			super();
@@ -881,6 +852,18 @@ public class QuestionResponse {
 		}
 		public void setWeightage(Integer weightage) {
 			this.weightage = weightage;
+		}
+		public Boolean getIsEdgeCase() {
+			return isEdgeCase;
+		}
+		public void setIsEdgeCase(Boolean isEdgeCase) {
+			this.isEdgeCase = isEdgeCase;
+		}
+		public Integer getDisplayOrder() {
+			return displayOrder;
+		}
+		public void setDisplayOrder(Integer displayOrder) {
+			this.displayOrder = displayOrder;
 		}
         
         
@@ -950,7 +933,8 @@ public class QuestionResponse {
 
     
     public static class WritingQuestionResponse {
-        private Long id;
+        
+    	private Long id;
         private WritingType writingType;
         private String prompt;
         private Integer minWords;
@@ -959,10 +943,18 @@ public class QuestionResponse {
         private String sampleAnswer;
         private String audioUrl;
         private Integer speechDurationSeconds;
-        private String gradingStatus;
+        private GradingStatus gradingStatus;    // ✅ enum not String
+        
+        // Add these
+        private String transcriptUrl;
+        private Integer maxFileSizeMb;
+        private GradingType gradingType;
+        private Double maxScore;
+        private String rubricJson;
 		public WritingQuestionResponse(Long id, WritingType writingType, String prompt, Integer minWords,
 				Integer maxWords, String evaluationCriteriaJson, String sampleAnswer, String audioUrl,
-				Integer speechDurationSeconds, String gradingStatus) {
+				Integer speechDurationSeconds, GradingStatus gradingStatus, String transcriptUrl, Integer maxFileSizeMb,
+				GradingType gradingType, Double maxScore, String rubricJson) {
 			super();
 			this.id = id;
 			this.writingType = writingType;
@@ -974,6 +966,11 @@ public class QuestionResponse {
 			this.audioUrl = audioUrl;
 			this.speechDurationSeconds = speechDurationSeconds;
 			this.gradingStatus = gradingStatus;
+			this.transcriptUrl = transcriptUrl;
+			this.maxFileSizeMb = maxFileSizeMb;
+			this.gradingType = gradingType;
+			this.maxScore = maxScore;
+			this.rubricJson = rubricJson;
 		}
 		public WritingQuestionResponse() {
 			super();
@@ -1032,12 +1029,43 @@ public class QuestionResponse {
 		public void setSpeechDurationSeconds(Integer speechDurationSeconds) {
 			this.speechDurationSeconds = speechDurationSeconds;
 		}
-		public String getGradingStatus() {
+		public GradingStatus getGradingStatus() {
 			return gradingStatus;
 		}
-		public void setGradingStatus(String gradingStatus) {
+		public void setGradingStatus(GradingStatus gradingStatus) {
 			this.gradingStatus = gradingStatus;
 		}
+		public String getTranscriptUrl() {
+			return transcriptUrl;
+		}
+		public void setTranscriptUrl(String transcriptUrl) {
+			this.transcriptUrl = transcriptUrl;
+		}
+		public Integer getMaxFileSizeMb() {
+			return maxFileSizeMb;
+		}
+		public void setMaxFileSizeMb(Integer maxFileSizeMb) {
+			this.maxFileSizeMb = maxFileSizeMb;
+		}
+		public GradingType getGradingType() {
+			return gradingType;
+		}
+		public void setGradingType(GradingType gradingType) {
+			this.gradingType = gradingType;
+		}
+		public Double getMaxScore() {
+			return maxScore;
+		}
+		public void setMaxScore(Double maxScore) {
+			this.maxScore = maxScore;
+		}
+		public String getRubricJson() {
+			return rubricJson;
+		}
+		public void setRubricJson(String rubricJson) {
+			this.rubricJson = rubricJson;
+		}
+        
         
         
     }
@@ -1049,8 +1077,66 @@ public class QuestionResponse {
         private String passageText;
         private String diDataJson;
         private String diImageUrl;
+     public String getPassageTextHindi() {
+			return passageTextHindi;
+		}
+		public void setPassageTextHindi(String passageTextHindi) {
+			this.passageTextHindi = passageTextHindi;
+		}
+		public String getTableDataJson() {
+			return tableDataJson;
+		}
+		public void setTableDataJson(String tableDataJson) {
+			this.tableDataJson = tableDataJson;
+		}
+		public String getChartDataJson() {
+			return chartDataJson;
+		}
+		public void setChartDataJson(String chartDataJson) {
+			this.chartDataJson = chartDataJson;
+		}
+		public String getChartImageUrl() {
+			return chartImageUrl;
+		}
+		public void setChartImageUrl(String chartImageUrl) {
+			this.chartImageUrl = chartImageUrl;
+		}
+		public Integer getBlankCount() {
+			return blankCount;
+		}
+		public void setBlankCount(Integer blankCount) {
+			this.blankCount = blankCount;
+		}
+		public String getInstructions() {
+			return instructions;
+		}
+		public void setInstructions(String instructions) {
+			this.instructions = instructions;
+		}
+		public String getInstructionsHindi() {
+			return instructionsHindi;
+		}
+		public void setInstructionsHindi(String instructionsHindi) {
+			this.instructionsHindi = instructionsHindi;
+		}
+		// Passage (RC / Cloze)
+        private String passageTextHindi;
+
+        // DI Data
+        private String tableDataJson;
+        private String chartDataJson;
+        private String chartImageUrl;
+
+        // Cloze Test
+        private Integer blankCount;
+
+        // Instructions
+        private String instructions;
+        private String instructionsHindi;
+		
 		public QuestionGroupResponse(Long id, GroupType groupType, String title, String passageText, String diDataJson,
-				String diImageUrl) {
+				String diImageUrl, String passageTextHindi, String tableDataJson, String chartDataJson,
+				String chartImageUrl, Integer blankCount, String instructions, String instructionsHindi) {
 			super();
 			this.id = id;
 			this.groupType = groupType;
@@ -1058,6 +1144,13 @@ public class QuestionResponse {
 			this.passageText = passageText;
 			this.diDataJson = diDataJson;
 			this.diImageUrl = diImageUrl;
+			this.passageTextHindi = passageTextHindi;
+			this.tableDataJson = tableDataJson;
+			this.chartDataJson = chartDataJson;
+			this.chartImageUrl = chartImageUrl;
+			this.blankCount = blankCount;
+			this.instructions = instructions;
+			this.instructionsHindi = instructionsHindi;
 		}
 		public QuestionGroupResponse() {
 			super();

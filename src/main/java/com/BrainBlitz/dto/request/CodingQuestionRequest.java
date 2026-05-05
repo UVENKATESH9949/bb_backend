@@ -41,7 +41,7 @@ public class CodingQuestionRequest {
     private String constraints;
 
     // Starter code shown to user in editor
-    private String codeSnippet;
+    private String starterCode;
 
     // Admin's correct solution — not shown to user
     private String solutionCode;
@@ -49,22 +49,36 @@ public class CodingQuestionRequest {
     @NotEmpty(message = "At least one language is required")
     private List<ProgrammingLanguage> supportedLanguages;
 
-    private String timeComplexity;          // e.g. "O(n log n)"
-    private String spaceComplexity;         // e.g. "O(n)"
+    private String expectedTimeComplexity;          // e.g. "O(n log n)"
+    private String expectedSpaceComplexity;         // e.g. "O(n)"
 
     // Explanation fields for the approach
     private QuestionExplanation questionExplanation;
     
+    private String realWorldContext;
+    private String driverCode;
+    private String approachesJson;
+    private List<String> hintsJson;
+    private List<String> prerequisitesJson;
+    private String commonMistakesJson;
+    private List<String> companyTagsJson;
+
+    // CODE_DEBUG only
+    private String buggyCode;
+    private String bugDescription;
 	public CodingQuestionRequest(@NotBlank(message = "Problem statement is required") String problemStatement,
 			@NotNull(message = "Question type is required") QuestionType questionType,
 			@NotNull(message = "Exam category is required") ExamCategory examCategory,
 			@NotNull(message = "Exam type is required") ExamType examType,
 			@NotBlank(message = "Subject is required") String subject, String topic,
 			@NotNull(message = "Difficulty level is required") DifficultyLevel difficultyLevel, Double marks,
-			Double negativeMarks, String hint, Boolean isAiGenerated, String inputFormat,
-			String outputFormat, String constraints, String codeSnippet, String solutionCode,
+			Double negativeMarks, String hint, Boolean isAiGenerated, String inputFormat, String outputFormat,
+			String constraints, String starterCode, String solutionCode,
 			@NotEmpty(message = "At least one language is required") List<ProgrammingLanguage> supportedLanguages,
-			String timeComplexity, String spaceComplexity,QuestionExplanation questionExplanation) {
+			String expectedTimeComplexity, String expectedSpaceComplexity, QuestionExplanation questionExplanation,
+			String realWorldContext, String driverCode, String approachesJson, List<String> hintsJson,
+			List<String> prerequisitesJson, String commonMistakesJson, List<String> companyTagsJson, String buggyCode,
+			String bugDescription) {
 		super();
 		this.problemStatement = problemStatement;
 		this.questionType = questionType;
@@ -76,184 +90,289 @@ public class CodingQuestionRequest {
 		this.marks = marks;
 		this.negativeMarks = negativeMarks;
 		this.hint = hint;
-		this.questionExplanation = questionExplanation;
 		this.isAiGenerated = isAiGenerated;
 		this.inputFormat = inputFormat;
 		this.outputFormat = outputFormat;
 		this.constraints = constraints;
-		this.codeSnippet = codeSnippet;
+		this.starterCode = starterCode;
 		this.solutionCode = solutionCode;
 		this.supportedLanguages = supportedLanguages;
-		this.timeComplexity = timeComplexity;
-		this.spaceComplexity = spaceComplexity;
-		
+		this.expectedTimeComplexity = expectedTimeComplexity;
+		this.expectedSpaceComplexity = expectedSpaceComplexity;
+		this.questionExplanation = questionExplanation;
+		this.realWorldContext = realWorldContext;
+		this.driverCode = driverCode;
+		this.approachesJson = approachesJson;
+		this.hintsJson = hintsJson;
+		this.prerequisitesJson = prerequisitesJson;
+		this.commonMistakesJson = commonMistakesJson;
+		this.companyTagsJson = companyTagsJson;
+		this.buggyCode = buggyCode;
+		this.bugDescription = bugDescription;
 	}
-
 	public CodingQuestionRequest() {
 		super();
 	}
-
 	public String getProblemStatement() {
 		return problemStatement;
 	}
-
 	public void setProblemStatement(String problemStatement) {
 		this.problemStatement = problemStatement;
 	}
-
 	public QuestionType getQuestionType() {
 		return questionType;
 	}
-
 	public void setQuestionType(QuestionType questionType) {
 		this.questionType = questionType;
 	}
-
 	public ExamCategory getExamCategory() {
 		return examCategory;
 	}
-
 	public void setExamCategory(ExamCategory examCategory) {
 		this.examCategory = examCategory;
 	}
-
 	public ExamType getExamType() {
 		return examType;
 	}
-
 	public void setExamType(ExamType examType) {
 		this.examType = examType;
 	}
-
 	public String getSubject() {
 		return subject;
 	}
-
 	public void setSubject(String subject) {
 		this.subject = subject;
 	}
-
 	public String getTopic() {
 		return topic;
 	}
-
 	public void setTopic(String topic) {
 		this.topic = topic;
 	}
-
 	public DifficultyLevel getDifficultyLevel() {
 		return difficultyLevel;
 	}
-
 	public void setDifficultyLevel(DifficultyLevel difficultyLevel) {
 		this.difficultyLevel = difficultyLevel;
 	}
-
 	public Double getMarks() {
 		return marks;
 	}
-
 	public void setMarks(Double marks) {
 		this.marks = marks;
 	}
-
 	public Double getNegativeMarks() {
 		return negativeMarks;
 	}
-
 	public void setNegativeMarks(Double negativeMarks) {
 		this.negativeMarks = negativeMarks;
 	}
-
 	public String getHint() {
 		return hint;
 	}
-
 	public void setHint(String hint) {
 		this.hint = hint;
 	}
-
 	public Boolean getIsAiGenerated() {
 		return isAiGenerated;
 	}
-
 	public void setIsAiGenerated(Boolean isAiGenerated) {
 		this.isAiGenerated = isAiGenerated;
 	}
-
 	public String getInputFormat() {
 		return inputFormat;
 	}
-
 	public void setInputFormat(String inputFormat) {
 		this.inputFormat = inputFormat;
 	}
-
 	public String getOutputFormat() {
 		return outputFormat;
 	}
-
 	public void setOutputFormat(String outputFormat) {
 		this.outputFormat = outputFormat;
 	}
-
 	public String getConstraints() {
 		return constraints;
 	}
-
 	public void setConstraints(String constraints) {
 		this.constraints = constraints;
 	}
-
-	public String getCodeSnippet() {
-		return codeSnippet;
+	public String getStarterCode() {
+		return starterCode;
 	}
-
-	public void setCodeSnippet(String codeSnippet) {
-		this.codeSnippet = codeSnippet;
+	public void setStarterCode(String starterCode) {
+		this.starterCode = starterCode;
 	}
-
 	public String getSolutionCode() {
 		return solutionCode;
 	}
-
 	public void setSolutionCode(String solutionCode) {
 		this.solutionCode = solutionCode;
 	}
-
 	public List<ProgrammingLanguage> getSupportedLanguages() {
 		return supportedLanguages;
 	}
-
 	public void setSupportedLanguages(List<ProgrammingLanguage> supportedLanguages) {
 		this.supportedLanguages = supportedLanguages;
 	}
-
-	public String getTimeComplexity() {
-		return timeComplexity;
+	public String getExpectedTimeComplexity() {
+		return expectedTimeComplexity;
 	}
-
-	public void setTimeComplexity(String timeComplexity) {
-		this.timeComplexity = timeComplexity;
+	public void setExpectedTimeComplexity(String expectedTimeComplexity) {
+		this.expectedTimeComplexity = expectedTimeComplexity;
 	}
-
-	public String getSpaceComplexity() {
-		return spaceComplexity;
+	public String getExpectedSpaceComplexity() {
+		return expectedSpaceComplexity;
 	}
-
-	public void setSpaceComplexity(String spaceComplexity) {
-		this.spaceComplexity = spaceComplexity;
+	public void setExpectedSpaceComplexity(String expectedSpaceComplexity) {
+		this.expectedSpaceComplexity = expectedSpaceComplexity;
 	}
-
 	public QuestionExplanation getQuestionExplanation() {
 		return questionExplanation;
 	}
-
 	public void setQuestionExplanation(QuestionExplanation questionExplanation) {
 		this.questionExplanation = questionExplanation;
 	}
-
+	public String getRealWorldContext() {
+		return realWorldContext;
+	}
+	public void setRealWorldContext(String realWorldContext) {
+		this.realWorldContext = realWorldContext;
+	}
+	public String getDriverCode() {
+		return driverCode;
+	}
+	public void setDriverCode(String driverCode) {
+		this.driverCode = driverCode;
+	}
+	public String getApproachesJson() {
+		return approachesJson;
+	}
+	public void setApproachesJson(String approachesJson) {
+		this.approachesJson = approachesJson;
+	}
+	public List<String> getHintsJson() {
+		return hintsJson;
+	}
+	public void setHintsJson(List<String> hintsJson) {
+		this.hintsJson = hintsJson;
+	}
+	public List<String> getPrerequisitesJson() {
+		return prerequisitesJson;
+	}
+	public void setPrerequisitesJson(List<String> prerequisitesJson) {
+		this.prerequisitesJson = prerequisitesJson;
+	}
+	public String getCommonMistakesJson() {
+		return commonMistakesJson;
+	}
+	public void setCommonMistakesJson(String commonMistakesJson) {
+		this.commonMistakesJson = commonMistakesJson;
+	}
+	public List<String> getCompanyTagsJson() {
+		return companyTagsJson;
+	}
+	public void setCompanyTagsJson(List<String> companyTagsJson) {
+		this.companyTagsJson = companyTagsJson;
+	}
+	public String getBuggyCode() {
+		return buggyCode;
+	}
+	public void setBuggyCode(String buggyCode) {
+		this.buggyCode = buggyCode;
+	}
+	public String getBugDescription() {
+		return bugDescription;
+	}
+	public void setBugDescription(String bugDescription) {
+		this.bugDescription = bugDescription;
+	}
+    
+	private List<TestCaseRequest> testCases;
 	
-    
-    
+	public static class TestCaseRequest {
+	    private String input;
+	    private String expectedOutput;
+	    private String explanation;
+	    private Boolean isSample;
+	    private Boolean isHidden;
+	    private Boolean isEdgeCase;
+	    private Integer weightage;
+	    private Integer displayOrder;
+	    // getters and setters
+		public String getInput() {
+			return input;
+		}
+		public void setInput(String input) {
+			this.input = input;
+		}
+		public String getExpectedOutput() {
+			return expectedOutput;
+		}
+		public void setExpectedOutput(String expectedOutput) {
+			this.expectedOutput = expectedOutput;
+		}
+		public String getExplanation() {
+			return explanation;
+		}
+		public void setExplanation(String explanation) {
+			this.explanation = explanation;
+		}
+		public Boolean getIsSample() {
+			return isSample;
+		}
+		public void setIsSample(Boolean isSample) {
+			this.isSample = isSample;
+		}
+		public Boolean getIsHidden() {
+			return isHidden;
+		}
+		public void setIsHidden(Boolean isHidden) {
+			this.isHidden = isHidden;
+		}
+		public Boolean getIsEdgeCase() {
+			return isEdgeCase;
+		}
+		public void setIsEdgeCase(Boolean isEdgeCase) {
+			this.isEdgeCase = isEdgeCase;
+		}
+		public Integer getWeightage() {
+			return weightage;
+		}
+		public void setWeightage(Integer weightage) {
+			this.weightage = weightage;
+		}
+		public Integer getDisplayOrder() {
+			return displayOrder;
+		}
+		public void setDisplayOrder(Integer displayOrder) {
+			this.displayOrder = displayOrder;
+		}
+		public TestCaseRequest(String input, String expectedOutput, String explanation, Boolean isSample,
+				Boolean isHidden, Boolean isEdgeCase, Integer weightage, Integer displayOrder) {
+			super();
+			this.input = input;
+			this.expectedOutput = expectedOutput;
+			this.explanation = explanation;
+			this.isSample = isSample;
+			this.isHidden = isHidden;
+			this.isEdgeCase = isEdgeCase;
+			this.weightage = weightage;
+			this.displayOrder = displayOrder;
+		}
+		public TestCaseRequest() {
+			super();
+		}
+	    
+	    
+	}
+
+	public List<TestCaseRequest> getTestCases() {
+		return testCases;
+	}
+	public void setTestCases(List<TestCaseRequest> testCases) {
+		this.testCases = testCases;
+	}
+	
+	
 }

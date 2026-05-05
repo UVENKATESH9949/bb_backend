@@ -50,6 +50,18 @@ public class WritingQuestionRequest {
 
     private QuestionExplanation questionExplanation;
     
+    private Integer maxFileSizeMb;
+    private GradingType gradingType = GradingType.MANUAL;
+    private Double maxScore;
+    private String rubricJson;
+    private String transcriptUrl;
+
+    @NotBlank(message = "Question text is required")
+    private String questionText;
+
+    @NotNull(message = "Language is required")
+    private Language language;
+
 	public WritingQuestionRequest(@NotBlank(message = "Prompt is required") String prompt,
 			@NotNull(message = "Writing type is required") WritingType writingType,
 			@NotNull(message = "Exam category is required") ExamCategory examCategory,
@@ -57,9 +69,12 @@ public class WritingQuestionRequest {
 			@NotBlank(message = "Subject is required") String subject, String topic,
 			@NotNull(message = "Difficulty level is required") DifficultyLevel difficultyLevel, Double marks,
 			Double negativeMarks, String hint, Boolean isAiGenerated, Integer minWords, Integer maxWords,
-			String evaluationCriteriaJson, String sampleAnswer, String audioUrl, Integer speechDurationSeconds, QuestionExplanation questionExplanation) {
+			String evaluationCriteriaJson, String sampleAnswer, String audioUrl, Integer speechDurationSeconds,
+			QuestionExplanation questionExplanation, Integer maxFileSizeMb, GradingType gradingType, Double maxScore,
+			String rubricJson, String transcriptUrl,
+			@NotBlank(message = "Question text is required") String questionText,
+			@NotNull(message = "Language is required") Language language) {
 		super();
-		this.questionExplanation = questionExplanation;
 		this.prompt = prompt;
 		this.writingType = writingType;
 		this.examCategory = examCategory;
@@ -77,6 +92,14 @@ public class WritingQuestionRequest {
 		this.sampleAnswer = sampleAnswer;
 		this.audioUrl = audioUrl;
 		this.speechDurationSeconds = speechDurationSeconds;
+		this.questionExplanation = questionExplanation;
+		this.maxFileSizeMb = maxFileSizeMb;
+		this.gradingType = gradingType;
+		this.maxScore = maxScore;
+		this.rubricJson = rubricJson;
+		this.transcriptUrl = transcriptUrl;
+		this.questionText = questionText;
+		this.language = language;
 	}
 
 	public WritingQuestionRequest() {
@@ -227,7 +250,61 @@ public class WritingQuestionRequest {
 		this.questionExplanation = questionExplanation;
 	}
 
+	public Integer getMaxFileSizeMb() {
+		return maxFileSizeMb;
+	}
+
+	public void setMaxFileSizeMb(Integer maxFileSizeMb) {
+		this.maxFileSizeMb = maxFileSizeMb;
+	}
+
+	public GradingType getGradingType() {
+		return gradingType;
+	}
+
+	public void setGradingType(GradingType gradingType) {
+		this.gradingType = gradingType;
+	}
+
+	public Double getMaxScore() {
+		return maxScore;
+	}
+
+	public void setMaxScore(Double maxScore) {
+		this.maxScore = maxScore;
+	}
+
+	public String getRubricJson() {
+		return rubricJson;
+	}
+
+	public void setRubricJson(String rubricJson) {
+		this.rubricJson = rubricJson;
+	}
+
+	public String getTranscriptUrl() {
+		return transcriptUrl;
+	}
+
+	public void setTranscriptUrl(String transcriptUrl) {
+		this.transcriptUrl = transcriptUrl;
+	}
+
+	public String getQuestionText() {
+		return questionText;
+	}
+
+	public void setQuestionText(String questionText) {
+		this.questionText = questionText;
+	}
+
+	public Language getLanguage() {
+		return language;
+	}
+
+	public void setLanguage(Language language) {
+		this.language = language;
+	}
+    
 	
-    
-    
 }

@@ -4,6 +4,7 @@ import java.util.List;
 import java.time.LocalDateTime;
 
 import com.BrainBlitz.enums.*;
+import com.BrainBlitz.dto.response.QuestionSummaryResponse.GroupPayload;
 import com.BrainBlitz.entity.*;
 
 
@@ -43,6 +44,7 @@ public class QuestionSummaryResponse {
     private CodingPayload codingPayload;         // CODE_WRITE, CODE_DEBUG, CODE_OUTPUT, SQL_OUTPUT
     private CodeSnippetPayload codeSnippetPayload; // CODE_FILL, FLOWCHART_MCQ
     private WritingPayload writingPayload;       // EMAIL_WRITE, ESSAY_WRITE, SPEECH_ROUND, LISTENING_COMP
+    private GroupPayload groupPayload;
 
     // ── No-arg constructor (required for Jackson) ──────────────
     public QuestionSummaryResponse() {}
@@ -130,13 +132,14 @@ public class QuestionSummaryResponse {
     public static class BlankDto {
         private int blankPosition;
         private String correctAnswer;
-        private String alternateAnswers;  // JSON string as-is from DB
+        private List<String> alternateAnswers;  // ← was String, now List<String>
         private boolean caseSensitive;
         private boolean exactMatch;
         private String blankHint;
         private Integer expectedAnswerLength;
 
-        public BlankDto(int blankPosition, String correctAnswer, String alternateAnswers,
+        public BlankDto(int blankPosition, String correctAnswer,
+                        List<String> alternateAnswers,  // ← updated constructor
                         boolean caseSensitive, boolean exactMatch,
                         String blankHint, Integer expectedAnswerLength) {
             this.blankPosition = blankPosition;
@@ -150,7 +153,7 @@ public class QuestionSummaryResponse {
 
         public int getBlankPosition() { return blankPosition; }
         public String getCorrectAnswer() { return correctAnswer; }
-        public String getAlternateAnswers() { return alternateAnswers; }
+        public List<String> getAlternateAnswers() { return alternateAnswers; }
         public boolean isCaseSensitive() { return caseSensitive; }
         public boolean isExactMatch() { return exactMatch; }
         public String getBlankHint() { return blankHint; }
@@ -162,8 +165,8 @@ public class QuestionSummaryResponse {
      */
     public static class ArrangementPayload {
         private ArrangementType arrangementType;
-        private String segmentsJson;
-        private String segmentsJsonHindi;
+        private List<String> segments;        // ← was String segmentsJson
+        private List<String> segmentsHindi;   // ← was String segmentsJsonHindi
         private String correctOrder;
         private String alternateCorrectOrders;
         private String fixedOpeningSentence;
@@ -172,14 +175,15 @@ public class QuestionSummaryResponse {
         private String fixedClosingSentenceHindi;
         private boolean isDragDrop;
 
-        public ArrangementPayload(ArrangementType arrangementType, String segmentsJson,
-                                  String segmentsJsonHindi, String correctOrder,
-                                  String alternateCorrectOrders, String fixedOpeningSentence,
-                                  String fixedClosingSentence, String fixedOpeningSentenceHindi,
-                                  String fixedClosingSentenceHindi, boolean isDragDrop) {
+        public ArrangementPayload(ArrangementType arrangementType,
+                                  List<String> segments, List<String> segmentsHindi,
+                                  String correctOrder, String alternateCorrectOrders,
+                                  String fixedOpeningSentence, String fixedClosingSentence,
+                                  String fixedOpeningSentenceHindi, String fixedClosingSentenceHindi,
+                                  boolean isDragDrop) {
             this.arrangementType = arrangementType;
-            this.segmentsJson = segmentsJson;
-            this.segmentsJsonHindi = segmentsJsonHindi;
+            this.segments = segments;
+            this.segmentsHindi = segmentsHindi;
             this.correctOrder = correctOrder;
             this.alternateCorrectOrders = alternateCorrectOrders;
             this.fixedOpeningSentence = fixedOpeningSentence;
@@ -190,8 +194,8 @@ public class QuestionSummaryResponse {
         }
 
         public ArrangementType getArrangementType() { return arrangementType; }
-        public String getSegmentsJson() { return segmentsJson; }
-        public String getSegmentsJsonHindi() { return segmentsJsonHindi; }
+        public List<String> getSegments() { return segments; }
+        public List<String> getSegmentsHindi() { return segmentsHindi; }
         public String getCorrectOrder() { return correctOrder; }
         public String getAlternateCorrectOrders() { return alternateCorrectOrders; }
         public String getFixedOpeningSentence() { return fixedOpeningSentence; }
@@ -254,37 +258,48 @@ public class QuestionSummaryResponse {
         private String inputFormat;
         private String outputFormat;
         private String constraints;
+        private String realWorldContext;
         private String starterCodeJson;
+        private String solutionCodeJson;
+        private String driverCodeJson;
         private String supportedLanguagesJson;
         private String expectedTimeComplexity;
         private String expectedSpaceComplexity;
-        private String whyThisDataStructure;
-        private String whyThisApproach;
-        private String alternateApproachesJson;
-        private String buggyCodeJson;       // CODE_DEBUG only
-        private String bugDescription;      // CODE_DEBUG only
-        // Note: testCases and solutionSteps intentionally excluded from
-        // session response — fetched separately when user submits
+        private String approachesJson;
+        private List<String> hintsJson;
+        private List<String> prerequisitesJson;
+        private String commonMistakesJson;
+        private List<String> companyTagsJson;
+        private String buggyCodeJson;
+        private String bugDescription;
+        // testCases and solutionSteps excluded from session response
 
         public CodingPayload(String problemStatement, String problemStatementHindi,
                              String inputFormat, String outputFormat, String constraints,
-                             String starterCodeJson, String supportedLanguagesJson,
-                             String expectedTimeComplexity, String expectedSpaceComplexity,
-                             String whyThisDataStructure, String whyThisApproach,
-                             String alternateApproachesJson, String buggyCodeJson,
-                             String bugDescription) {
+                             String realWorldContext, String starterCodeJson,
+                             String solutionCodeJson, String driverCodeJson,
+                             String supportedLanguagesJson, String expectedTimeComplexity,
+                             String expectedSpaceComplexity, String approachesJson,
+                             List<String> hintsJson, List<String> prerequisitesJson,
+                             String commonMistakesJson, List<String> companyTagsJson,
+                             String buggyCodeJson, String bugDescription) {
             this.problemStatement = problemStatement;
             this.problemStatementHindi = problemStatementHindi;
             this.inputFormat = inputFormat;
             this.outputFormat = outputFormat;
             this.constraints = constraints;
+            this.realWorldContext = realWorldContext;
             this.starterCodeJson = starterCodeJson;
+            this.solutionCodeJson = solutionCodeJson;
+            this.driverCodeJson = driverCodeJson;
             this.supportedLanguagesJson = supportedLanguagesJson;
             this.expectedTimeComplexity = expectedTimeComplexity;
             this.expectedSpaceComplexity = expectedSpaceComplexity;
-            this.whyThisDataStructure = whyThisDataStructure;
-            this.whyThisApproach = whyThisApproach;
-            this.alternateApproachesJson = alternateApproachesJson;
+            this.approachesJson = approachesJson;
+            this.hintsJson = hintsJson;
+            this.prerequisitesJson = prerequisitesJson;
+            this.commonMistakesJson = commonMistakesJson;
+            this.companyTagsJson = companyTagsJson;
             this.buggyCodeJson = buggyCodeJson;
             this.bugDescription = bugDescription;
         }
@@ -294,16 +309,150 @@ public class QuestionSummaryResponse {
         public String getInputFormat() { return inputFormat; }
         public String getOutputFormat() { return outputFormat; }
         public String getConstraints() { return constraints; }
+        public String getRealWorldContext() { return realWorldContext; }
         public String getStarterCodeJson() { return starterCodeJson; }
+        public String getSolutionCodeJson() { return solutionCodeJson; }
+        public String getDriverCodeJson() { return driverCodeJson; }
         public String getSupportedLanguagesJson() { return supportedLanguagesJson; }
         public String getExpectedTimeComplexity() { return expectedTimeComplexity; }
         public String getExpectedSpaceComplexity() { return expectedSpaceComplexity; }
-        public String getWhyThisDataStructure() { return whyThisDataStructure; }
-        public String getWhyThisApproach() { return whyThisApproach; }
-        public String getAlternateApproachesJson() { return alternateApproachesJson; }
+        public String getApproachesJson() { return approachesJson; }
+        public List<String> getHintsJson() { return hintsJson; }
+        public List<String> getPrerequisitesJson() { return prerequisitesJson; }
+        public String getCommonMistakesJson() { return commonMistakesJson; }
+        public List<String> getCompanyTagsJson() { return companyTagsJson; }
         public String getBuggyCodeJson() { return buggyCodeJson; }
         public String getBugDescription() { return bugDescription; }
     }
+    public static class GroupPayload {
+        private Long groupId;
+        private GroupType groupType;
+        private String title;
+        private String instructions;
+        private String instructionsHindi;
+
+        // RC / CLOZE / CASELET
+        private String passageText;
+        private String passageTextHindi;
+
+        // CLOZE only
+        private Integer blankCount;
+
+        // TABLE_DI
+        private String tableDataJson;
+
+        // BAR / PIE / LINE chart DI
+        private String chartDataJson;
+        private String chartImageUrl;
+
+        public GroupPayload(Long groupId, GroupType groupType, String title,
+                            String instructions, String instructionsHindi,
+                            String passageText, String passageTextHindi,
+                            Integer blankCount, String tableDataJson,
+                            String chartDataJson, String chartImageUrl) {
+            this.groupId = groupId;
+            this.groupType = groupType;
+            this.title = title;
+            this.instructions = instructions;
+            this.instructionsHindi = instructionsHindi;
+            this.passageText = passageText;
+            this.passageTextHindi = passageTextHindi;
+            this.blankCount = blankCount;
+            this.tableDataJson = tableDataJson;
+            this.chartDataJson = chartDataJson;
+            this.chartImageUrl = chartImageUrl;
+        }
+
+		public Long getGroupId() {
+			return groupId;
+		}
+
+		public void setGroupId(Long groupId) {
+			this.groupId = groupId;
+		}
+
+		public GroupType getGroupType() {
+			return groupType;
+		}
+
+		public void setGroupType(GroupType groupType) {
+			this.groupType = groupType;
+		}
+
+		public String getTitle() {
+			return title;
+		}
+
+		public void setTitle(String title) {
+			this.title = title;
+		}
+
+		public String getInstructions() {
+			return instructions;
+		}
+
+		public void setInstructions(String instructions) {
+			this.instructions = instructions;
+		}
+
+		public String getInstructionsHindi() {
+			return instructionsHindi;
+		}
+
+		public void setInstructionsHindi(String instructionsHindi) {
+			this.instructionsHindi = instructionsHindi;
+		}
+
+		public String getPassageText() {
+			return passageText;
+		}
+
+		public void setPassageText(String passageText) {
+			this.passageText = passageText;
+		}
+
+		public String getPassageTextHindi() {
+			return passageTextHindi;
+		}
+
+		public void setPassageTextHindi(String passageTextHindi) {
+			this.passageTextHindi = passageTextHindi;
+		}
+
+		public Integer getBlankCount() {
+			return blankCount;
+		}
+
+		public void setBlankCount(Integer blankCount) {
+			this.blankCount = blankCount;
+		}
+
+		public String getTableDataJson() {
+			return tableDataJson;
+		}
+
+		public void setTableDataJson(String tableDataJson) {
+			this.tableDataJson = tableDataJson;
+		}
+
+		public String getChartDataJson() {
+			return chartDataJson;
+		}
+
+		public void setChartDataJson(String chartDataJson) {
+			this.chartDataJson = chartDataJson;
+		}
+
+		public String getChartImageUrl() {
+			return chartImageUrl;
+		}
+
+		public void setChartImageUrl(String chartImageUrl) {
+			this.chartImageUrl = chartImageUrl;
+		}
+
+    }
+    
 
     /**
      * Code snippet question (code_fill, flowchart_mcq, sql_output MCQ variant)
@@ -474,4 +623,13 @@ public class QuestionSummaryResponse {
 
     public WritingPayload getWritingPayload() { return writingPayload; }
     public void setWritingPayload(WritingPayload writingPayload) { this.writingPayload = writingPayload; }
+    
+	public GroupPayload getGroupPayload() {
+		return groupPayload;
+	}
+	public void setGroupPayload(GroupPayload groupPayload) {
+		this.groupPayload = groupPayload;
+	}
+    
+    
 }

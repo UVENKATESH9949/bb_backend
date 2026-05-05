@@ -78,4 +78,7 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
     // Used for "AI questions" dashboard stat
     long countByIsAiGeneratedTrue();
     
+ // Add to QuestionRepository
+    boolean existsByGroupId(Long groupId);
+    
 }

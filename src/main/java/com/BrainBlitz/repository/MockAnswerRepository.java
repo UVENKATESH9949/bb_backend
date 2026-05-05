@@ -14,6 +14,9 @@ import com.BrainBlitz.enums.AnswerResult;
 public interface MockAnswerRepository 
     extends JpaRepository<MockAnswer, Long> {
 
+	// Add this to MockAnswerRepository
+	void deleteByQuestionId(Long questionId);
+	
     // Fetch all answers for a session
     // Main query — used for result calculation
     List<MockAnswer> findByMockSessionId(Long sessionId);
