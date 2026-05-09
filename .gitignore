@@ -1,0 +1,23 @@
+# Maven
+target/
+*.class
+*.jar
+
+# Eclipse
+.classpath
+.project
+.settings/
+.metadata/
+
+# IDE
+.idea/
+*.iml
+
+# OS
+desktop.ini
+*.lnk
+
+# Zip files
+*.zip
+
+# Don't track files outside this project 
